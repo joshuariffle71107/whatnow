@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="What Now?"/>
+  <meta name="theme-color" content="#C04A35"/>
+  <title>What Now?</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon.png"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;overflow:hidden;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;max-width:430px;margin:0 auto;position:relative;}
+    :root{--coral:#C04A35;--coral-light:#FAECE7;--coral-mid:#E8614A;--gray:#888780;--gray-light:#F1EFE8;--gray-mid:#D3D1C7;--teal:#1D9E75;--teal-light:#E1F5EE;--amber:#BA7517;--text:#1a1a1a;--text-muted:#888780;}
+    .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;padding-bottom:80px;}
+    .screen.active{display:flex;}
+    .nav{display:flex;justify-content:space-around;padding:10px 0 20px;border-top:0.5px solid #e5e5e5;background:#fff;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100;}
+    .nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 20px;font-family:inherit;}
+    .nav-icon{font-size:20px;}
+    .nav-label{font-size:10px;color:var(--gray);}
+    .nav-label.on{color:var(--coral);font-weight:600;}
+    .nav-dot{width:4px;height:4px;border-radius:50%;background:transparent;margin:0 auto;}
+    .nav-dot.on{background:var(--coral);}
+    .topbar{padding:56px 20px 16px;}
+    .topbar h1{font-size:26px;font-weight:700;color:var(--text);}
+    .topbar p{font-size:14px;color:var(--gray);margin-top:3px;}
+    .what-now-btn{margin:0 20px;background:var(--coral);border:none;border-radius:20px;padding:28px 20px;width:calc(100% - 40px);cursor:pointer;font-family:inherit;text-align:center;}
+    .wn-label{font-size:22px;font-weight:700;color:#fff;font-family:Georgia,serif;font-style:italic;}
+    .wn-sub{font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;}
+    .filter-row{display:flex;gap:7px;padding:16px 20px 8px;overflow-x:auto;scrollbar-width:none;}
+    .filter-row::-webkit-scrollbar{display:none;}
+    .pill{border:0.5px solid #ddd;background:transparent;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--gray);cursor:pointer;white-space:nowrap;font-family:inherit;}
+    .pill.on{background:var(--coral);border-color:var(--coral);color:#fff;}
+    .section-label{font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:8px 20px 6px;}
+    .idea-list{padding:0 20px;display:flex;flex-direction:column;gap:8px;}
+    .idea-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:0.5px solid #eee;background:#fff;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,0.05);}
+    .idea-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .idea-info{flex:1;min-width:0;}
+    .idea-text{font-size:14px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .idea-age{font-size:11px;color:var(--gray);margin-top:1px;}
+    .idea-tag{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;flex-shrink:0;}
+    .tag-solo{background:#FAECE7;color:#712B13;}
+    .tag-group{background:#E1F5EE;color:#085041;}
+    .tag-prod{background:#FAEEDA;color:#633806;}
+    .tag-someday{background:#F1EFE8;color:#5F5E5A;}
+    .add-row{display:flex;gap:8px;padding:14px 20px;}
+    .add-inp{flex:1;font-size:14px;padding:10px 14px;border-radius:12px;border:0.5px solid #ddd;background:#f9f9f9;color:var(--text);outline:none;font-family:inherit;}
+    .add-btn{background:var(--coral);color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+    .back-btn{background:none;border:none;color:var(--coral);font-size:14px;cursor:pointer;font-family:inherit;padding:0;}
+    .sug-card{margin:16px 20px;background:#f9f9f9;border-radius:16px;padding:20px;border:0.5px solid #eee;}
+    .sug-eye{font-size:10px;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;}
+    .sug-title{font-size:20px;font-weight:700;color:var(--text);}
+    .sug-meta{font-size:12px;color:var(--gray);margin-top:4px;}
+    .sug-actions{display:flex;gap:8px;margin-top:16px;}
+    .sa{flex:1;padding:10px 6px;border-radius:10px;border:0.5px solid #ddd;background:#fff;font-size:12px;color:var(--gray);cursor:pointer;font-family:inherit;text-align:center;}
+    .sa-p{background:var(--coral);color:#fff;border-color:var(--coral);font-weight:600;}
+    .energy-wrap{padding:0 20px;margin-top:16px;}
+    .energy-label{font-size:12px;color:var(--gray);margin-bottom:8px;}
+    .energy-opts{display:flex;gap:8px;}
+    .energy-opt{flex:1;padding:9px 4px;border-radius:10px;border:0.5px solid #ddd;text-align:center;cursor:pointer;font-size:12px;color:var(--gray);background:#fff;font-family:inherit;}
+    .energy-opt.on{border-color:var(--coral);background:var(--coral-light);color:var(--coral);font-weight:600;}
+    .skip-q{margin:12px 20px 0;background:#f9f9f9;border-radius:14px;padding:14px;border:0.5px solid #eee;}
+    .skip-q-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;}
+    .skip-opts{display:flex;flex-wrap:wrap;gap:7px;}
+    .skip-opt{font-size:12px;padding:6px 12px;border-radius:20px;border:0.5px solid #ddd;color:var(--gray);background:#fff;cursor:pointer;font-family:inherit;}
+    .skip-opt.on{background:var(--coral);color:#fff;border-color:var(--coral);}
+    .done-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 20px;text-align:center;gap:14px;}
+    .done-circle{width:80px;height:80px;border-radius:50%;background:var(--teal-light);display:flex;align-items:center;justify-content:center;}
+    .done-check{width:36px;height:36px;border-radius:50%;background:var(--teal);}
+    .done-title{font-size:26px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;}
+    .done-sub{font-size:14px;color:var(--gray);max-width:240px;line-height:1.5;}
+    .done-btn{background:var(--coral);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit;}
+    .done-sec{background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;font-family:inherit;margin-top:4px;}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;border-bottom:0.5px solid #eee;}
+    .detail-label{font-size:14px;color:var(--gray);}
+    .detail-val{font-size:14px;color:var(--text);font-weight:500;}
+    .detail-val-muted{font-size:14px;color:var(--gray);}
+    .toggle{width:40px;height:22px;border-radius:11px;background:#ddd;cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0;}
+    .toggle.on{background:var(--coral);}
+    .toggle-knob{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;pointer-events:none;}
+    .toggle.on .toggle-knob{left:20px;}
+    .detail-actions{padding:20px;display:flex;flex-direction:column;gap:10px;}
+    .detail-btn-row{display:flex;gap:10px;}
+    .detail-btn{flex:1;padding:13px;border-radius:12px;border:0.5px solid #ddd;background:#fff;font-size:14px;color:var(--gray);cursor:pointer;font-family:inherit;}
+    .detail-btn-p{background:var(--coral);color:#fff;border-color:var(--coral);font-weight:600;}
+    .remove-btn{background:none;border:none;color:#E24B4A;font-size:13px;cursor:pointer;font-family:inherit;text-align:center;padding:4px;width:100%;}
+    .group-card{margin:0 20px 10px;background:#fff;border-radius:14px;padding:14px 16px;border:0.5px solid #eee;cursor:pointer;}
+    .group-name{font-size:15px;font-weight:700;color:var(--text);}
+    .group-meta{font-size:12px;color:var(--gray);margin-top:2px;}
+    .avatar-row{display:flex;margin-top:8px;}
+    .avatar{width:26px;height:26px;border-radius:50%;background:var(--coral-light);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--coral);font-weight:700;margin-right:-6px;}
+    .create-btn{margin:4px 20px;background:var(--coral);color:#fff;border:none;border-radius:14px;padding:13px;width:calc(100% - 40px);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+    .someday-note{font-size:11px;color:var(--gray);font-style:italic;margin-top:2px;}
+    .empty{padding:60px 20px;text-align:center;color:var(--gray);font-size:14px;line-height:1.6;}
+    .nudge{margin:10px 20px 0;background:var(--coral-light);border-radius:12px;padding:12px 14px;border:0.5px solid #F0997B;font-size:13px;color:#712B13;line-height:1.5;}
+    .onboard-wrap{display:flex;flex-direction:column;min-height:100vh;padding:56px 20px 100px;}
+    .onboard-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:0.5px solid #eee;margin-bottom:8px;cursor:pointer;}
+    .onboard-opt.on{border-color:var(--coral);background:var(--coral-light);}
+    .onboard-opt-text{font-size:14px;color:var(--text);flex:1;}
+    .onboard-check{width:20px;height:20px;border-radius:50%;border:1.5px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+    .onboard-check.on{background:var(--coral);border-color:var(--coral);}
+    .onboard-inner{width:8px;height:8px;border-radius:50%;background:#fff;}
+    .prog{display:flex;gap:5px;justify-content:center;margin-bottom:24px;}
+    .prog-dot{width:6px;height:6px;border-radius:50%;background:#ddd;}
+    .prog-dot.on{background:var(--coral);}
+    .install-banner{margin:10px 20px 0;background:#f9f9f9;border-radius:12px;padding:12px 14px;border:0.5px solid #eee;font-size:12px;color:var(--gray);line-height:1.5;}
+  </style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="s-onboard" class="screen active">
+  <div class="onboard-wrap">
+    <div class="prog"><div class="prog-dot on"></div><div class="prog-dot"></div><div class="prog-dot"></div></div>
+    <h1 style="font-size:28px;font-weight:700;color:var(--text);margin-bottom:4px;font-family:Georgia,serif;font-style:italic;">what now?</h1>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">pick some ideas to get started. we'll add them to your list.</p>
+    <div class="section-label" style="padding:0;margin-bottom:10px;">fun things</div>
+    <div class="onboard-opt on" onclick="toggleOnboard(this)"><span class="onboard-opt-text">bowling with friends</span><div class="onboard-check on"><div class="onboard-inner"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">try a new restaurant</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">movie night</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="onboard-opt on" onclick="toggleOnboard(this)"><span class="onboard-opt-text">explore a new part of town</span><div class="onboard-check on"><div class="onboard-inner"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">game night</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="section-label" style="padding:0;margin:14px 0 10px;">productive stuff</div>
+    <div class="onboard-opt on" onclick="toggleOnboard(this)"><span class="onboard-opt-text">start reading a book</span><div class="onboard-check on"><div class="onboard-inner"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">deep clean my room</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">go to the gym</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">meal prep for the week</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="section-label" style="padding:0;margin:14px 0 10px;">try something new</div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">take a photography walk</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">cook a recipe i've never tried</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">watch a documentary</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:16px 20px 32px;background:#fff;border-top:0.5px solid #eee;">
+      <button class="create-btn" style="margin:0;width:100%;" onclick="finishOnboard()">looks good, let's go</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="s-home" class="screen">
+  <div class="topbar"><h1>what now?</h1><p>hey, what do you feel like doing?</p></div>
+  <div id="nudge-wrap"></div>
+  <button class="what-now-btn" onclick="goSuggest()">
+    <div class="wn-label">what now?</div>
+    <div class="wn-sub">tap for a suggestion from your list</div>
+  </button>
+  <div class="filter-row">
+    <button class="pill on" onclick="filterPill(this,'anything')">anything</button>
+    <button class="pill" onclick="filterPill(this,'solo')">solo</button>
+    <button class="pill" onclick="filterPill(this,'group')">group</button>
+    <button class="pill" onclick="filterPill(this,'productive')">productive</button>
+    <button class="pill" onclick="filterPill(this,'free')">free</button>
+    <button class="pill" onclick="filterPill(this,'outside')">outside</button>
+  </div>
+  <div class="section-label">your list</div>
+  <div class="idea-list" id="idea-list"></div>
+  <div class="add-row">
+    <input class="add-inp" id="new-idea" placeholder="add a new idea..." onkeydown="if(event.key==='Enter')addIdea()"/>
+    <button class="add-btn" onclick="addIdea()">+ add</button>
+  </div>
+</div>
+
+<!-- SUGGEST -->
+<div id="s-suggest" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="goTo('s-home')">← back</button><h1 style="margin-top:8px;">here's an idea.</h1><p>pulled from your list</p></div>
+  <div class="energy-wrap">
+    <div class="energy-label">your energy right now?</div>
+    <div class="energy-opts">
+      <button class="energy-opt" onclick="energyPick(this,'low')">😴 low</button>
+      <button class="energy-opt on" onclick="energyPick(this,'medium')">😊 medium</button>
+      <button class="energy-opt" onclick="energyPick(this,'high')">⚡ high</button>
+    </div>
+  </div>
+  <div class="sug-card">
+    <div class="sug-eye" id="sug-eye"></div>
+    <div class="sug-title" id="sug-title"></div>
+    <div class="sug-meta" id="sug-meta"></div>
+    <div class="sug-actions">
+      <button class="sa" onclick="skipIdea()">skip it</button>
+      <button class="sa" onclick="nextSug()">another one</button>
+      <button class="sa sa-p" onclick="doIt()">let's do it</button>
+    </div>
+  </div>
+  <div id="skip-q" style="display:none;">
+    <div class="skip-q">
+      <div class="skip-q-label">what's the holdup?</div>
+      <div class="skip-opts">
+        <button class="skip-opt" onclick="this.classList.toggle('on')">💸 broke</button>
+        <button class="skip-opt" onclick="this.classList.toggle('on')">🛋️ staying in</button>
+        <button class="skip-opt" onclick="this.classList.toggle('on')">😴 low energy</button>
+        <button class="skip-opt" onclick="this.classList.toggle('on')">👥 no one's free</button>
+        <button class="skip-opt" onclick="this.classList.toggle('on')">just not feeling it</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DONE -->
+<div id="s-done" class="screen">
+  <div class="done-wrap">
+    <div class="done-circle"><div class="done-check"></div></div>
+    <div class="done-title" id="done-title">look at you go.</div>
+    <div class="done-sub" id="done-sub"></div>
+    <button class="done-btn" onclick="goTo('s-home')">back to my list</button>
+    <button class="done-sec" onclick="moveToSomeday()">move to someday instead</button>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div id="s-detail" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="goTo('s-home')">← back</button><h1 id="detail-title" style="margin-top:8px;font-size:20px;"></h1></div>
+  <div id="detail-tags" style="display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 16px;"></div>
+  <div class="detail-row"><span class="detail-label">added</span><span class="detail-val" id="detail-added"></span></div>
+  <div class="detail-row"><span class="detail-label">reminder</span><span class="detail-val-muted">none set</span></div>
+  <div class="detail-row"><span class="detail-label">repeat</span><span class="detail-val-muted">none</span></div>
+  <div class="detail-row"><span class="detail-label">location</span><span class="detail-val-muted">none set</span></div>
+  <div class="detail-row"><span class="detail-label">expires</span><span class="detail-val-muted">never</span></div>
+  <div class="detail-row"><span class="detail-label">private</span><button class="toggle" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'20px':'2px'"><div class="toggle-knob"></div></button></div>
+  <div class="detail-actions">
+    <div class="detail-btn-row">
+      <button class="detail-btn" onclick="detailToSomeday()">move to someday</button>
+      <button class="detail-btn detail-btn-p" onclick="detailDone()">done this</button>
+    </div>
+    <button class="remove-btn" onclick="removeIdea()">remove idea</button>
+  </div>
+</div>
+
+<!-- GROUPS -->
+<div id="s-groups" class="screen">
+  <div class="topbar"><h1>groups</h1><p>shared lists with your people</p></div>
+  <div id="group-list"></div>
+  <button class="create-btn" onclick="createGroup()">+ create a group</button>
+</div>
+
+<!-- GROUP DETAIL -->
+<div id="s-groupdetail" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="goTo('s-groups')">← groups</button><h1 id="gd-name" style="margin-top:8px;"></h1><p id="gd-meta"></p></div>
+  <button class="what-now-btn" style="margin-bottom:16px;" onclick="goSuggestGroup()">
+    <div class="wn-label" style="font-size:17px;">what now, crew?</div>
+    <div class="wn-sub">suggest something from the group list</div>
+  </button>
+  <div class="section-label">group ideas</div>
+  <div class="idea-list" id="group-idea-list"></div>
+  <div class="add-row">
+    <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()"/>
+    <button class="add-btn" onclick="addGroupIdea()">+ add</button>
+  </div>
+</div>
+
+<!-- SOMEDAY -->
+<div id="s-someday" class="screen">
+  <div class="topbar"><h1>someday.</h1><p>intentions, not obligations.</p></div>
+  <div class="idea-list" id="someday-list"></div>
+  <p style="padding:12px 20px;font-size:12px;color:var(--gray);font-style:italic;line-height:1.6;">the app will nudge you on these when the moment feels right. no pressure.</p>
+  <div class="add-row">
+    <input class="add-inp" id="someday-inp" placeholder="a someday intention..." onkeydown="if(event.key==='Enter')addSomeday()"/>
+    <button class="add-btn" onclick="addSomeday()">+ add</button>
+  </div>
+</div>
+
+<div class="nav" id="main-nav" style="display:none;">
+  <button class="nav-btn" onclick="goTo('s-home')"><span class="nav-icon">⊙</span><div class="nav-dot on" id="nd-home"></div><span class="nav-label on" id="nl-home">home</span></button>
+  <button class="nav-btn" onclick="goTo('s-groups')"><span class="nav-icon">◎</span><div class="nav-dot" id="nd-groups"></div><span class="nav-label" id="nl-groups">groups</span></button>
+  <button class="nav-btn" onclick="goTo('s-someday')"><span class="nav-icon">◇</span><div class="nav-dot" id="nd-someday"></div><span class="nav-label" id="nl-someday">someday</span></button>
+</div>
+
+<script>
+const CORAL='#C04A35',TEAL='#1D9E75',AMBER='#BA7517',GRAY='#888780';
+const nudges=["it's friday... what now? 👀","you haven't done anything from your list in a while. just saying.","saturday afternoon with nothing to do? your list has thoughts.","reminder that doing nothing is always an option. but also, you have ideas waiting.","it's the weekend. what now?","your someday list is getting dusty. maybe today's the day?"];
+const oneLiners=["look at you go.","knew you had it in you.","look at you being a person.","not bad. not bad at all.","proud of you honestly."];
+
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+function daysAgo(n){const d=new Date();d.setDate(d.getDate()-n);return d.toISOString();}
+function daysSince(d){return Math.floor((Date.now()-new Date(d))/(864e5));}
+function ageText(d){const n=daysSince(d);if(n===0)return'just added';if(n===1)return'added yesterday';if(n<7)return`added ${n} days ago`;if(n<14)return'added 1 week ago';if(n<30)return`added ${Math.floor(n/7)} weeks ago`;return`added ${Math.floor(n/30)} month${Math.floor(n/30)>1?'s':''} ago`;}
+function isOld(d){return daysSince(d)>14;}
+function tagClass(t){return t==='solo'?'tag-solo':t==='group'?'tag-group':t==='productive'||t==='outside'||t==='free'?'tag-prod':'tag-someday';}
+function dotColor(t){return t==='group'?TEAL:t==='productive'||t==='outside'?AMBER:CORAL;}
+
+const defaultIdeas=[
+  {id:1,text:'bowling with friends',type:'group',tag:'group',dateAdded:daysAgo(3),skipCount:0,isDone:false,isSomeday:false},
+  {id:2,text:'try that ramen place',type:'group',tag:'group',dateAdded:daysAgo(7),skipCount:0,isDone:false,isSomeday:false},
+  {id:3,text:'start reading a book',type:'solo',tag:'solo',dateAdded:daysAgo(14),skipCount:0,isDone:false,isSomeday:false},
+  {id:4,text:'deep clean my room',type:'solo',tag:'productive',dateAdded:daysAgo(30),skipCount:0,isDone:false,isSomeday:false},
+  {id:5,text:'go to the gym',type:'solo',tag:'productive',dateAdded:daysAgo(10),skipCount:0,isDone:false,isSomeday:false},
+  {id:6,text:'explore a new part of town',type:'solo',tag:'outside',dateAdded:daysAgo(5),skipCount:0,isDone:false,isSomeday:false},
+  {id:7,text:'game night',type:'group',tag:'group',dateAdded:daysAgo(4),skipCount:0,isDone:false,isSomeday:false},
+];
+const defaultSomedays=[
+  {id:101,text:'learn to cook one new thing a month',note:'been meaning to for a while'},
+  {id:102,text:'start journaling',note:'maybe this week feels right'},
+  {id:103,text:'plan a weekend trip somewhere new',note:'added a while back'},
+];
+const defaultGroups=[
+  {id:1,name:'the usual crew',members:['JK','ME','TR','AL'],ideas:[{id:1,text:'bowling',tag:'group'},{id:2,text:'ramen place on state st',tag:'group'},{id:3,text:"game night at jake's",tag:'group'}]},
+  {id:2,name:'roommates',members:['AL','BS','ME'],ideas:[{id:1,text:'movie night',tag:'group'},{id:2,text:'deep clean the apartment',tag:'productive'}]},
+];
+
+let ideas=load('wn-ideas',defaultIdeas);
+let somedays=load('wn-somedays',defaultSomedays);
+let groups=load('wn-groups',defaultGroups);
+let onboarded=load('wn-onboarded',false);
+let nextId=load('wn-nextid',300);
+let currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentEnergy='medium',skipCount=0,doneSugText='';
+
+function saveAll(){save('wn-ideas',ideas);save('wn-somedays',somedays);save('wn-groups',groups);save('wn-nextid',nextId);}
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const nav=document.getElementById('main-nav');
+  const noNav=['s-onboard','s-suggest','s-done','s-detail','s-groupdetail'];
+  nav.style.display=noNav.includes(id)?'none':'flex';
+  ['home','groups','someday'].forEach(t=>{
+    const on=(t==='home'&&(id==='s-home'))|| (t==='groups'&&(id==='s-groups'||id==='s-groupdetail'))|| (t==='someday'&&id==='s-someday');
+    document.getElementById(`nd-${t}`).classList.toggle('on',on);
+    document.getElementById(`nl-${t}`).classList.toggle('on',on);
+  });
+  if(id==='s-home'){renderIdeas();showNudge();}
+  if(id==='s-groups')renderGroups();
+  if(id==='s-someday')renderSomeday();
+  window.scrollTo(0,0);
+}
+
+function renderIdeas(){
+  const el=document.getElementById('idea-list');
+  const active=ideas.filter(i=>!i.isDone&&!i.isSomeday&&(currentFilter==='anything'||i.tag===currentFilter||i.type===currentFilter));
+  if(!active.length){el.innerHTML='<div class="empty">your list is empty!<br>add some ideas below.</div>';return;}
+  el.innerHTML='';
+  active.forEach(idea=>{
+    const row=document.createElement('div');row.className='idea-row';
+    const old=isOld(idea.dateAdded)?' · been a while!':'';
+    row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag)}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div><div class="idea-age">${ageText(idea.dateAdded)}${old}</div></div><span class="idea-tag ${tagClass(idea.tag)}">${idea.tag}</span>`;
+    row.onclick=()=>openDetail(idea.id);
+    el.appendChild(row);
+  });
+}
+
+function renderGroups(){
+  const el=document.getElementById('group-list');el.innerHTML='';
+  if(!groups.length){el.innerHTML='<div class="empty">no groups yet.<br>create one and add your friends!</div>';return;}
+  groups.forEach(g=>{
+    const card=document.createElement('div');card.className='group-card';
+    const avs=g.members.map(m=>`<div class="avatar">${m}</div>`).join('');
+    card.innerHTML=`<div class="group-name">${g.name}</div><div class="group-meta">${g.members.length} members · ${g.ideas.length} ideas</div><div class="avatar-row">${avs}</div>`;
+    card.onclick=()=>openGroup(g.id);el.appendChild(card);
+  });
+}
+
+function renderSomeday(){
+  const el=document.getElementById('someday-list');el.innerHTML='';
+  if(!somedays.length){el.innerHTML='<div class="empty">no intentions yet.<br>add something you\'ve been meaning to do.</div>';return;}
+  somedays.forEach(s=>{
+    const row=document.createElement('div');row.className='idea-row';
+    row.innerHTML=`<div class="idea-dot" style="background:${GRAY}"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note}</div></div><span class="idea-tag tag-someday">someday</span>`;
+    row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){somedays=somedays.filter(x=>x.id!==s.id);ideas.push({id:nextId++,text:s.text,type:'solo',tag:'solo',dateAdded:new Date().toISOString(),skipCount:0,isDone:false,isSomeday:false});saveAll();renderSomeday();}};
+    el.appendChild(row);
+  });
+}
+
+function renderGroupDetail(gid){
+  const g=groups.find(x=>x.id===gid);if(!g)return;
+  document.getElementById('gd-name').textContent=g.name;
+  document.getElementById('gd-meta').textContent=`${g.members.length} members`;
+  const el=document.getElementById('group-idea-list');el.innerHTML='';
+  g.ideas.forEach(idea=>{
+    const row=document.createElement('div');row.className='idea-row';
+    row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag)}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div></div><span class="idea-tag ${tagClass(idea.tag)}">${idea.tag}</span>`;
+    el.appendChild(row);
+  });
+}
+
+function getPool(){
+  let pool=ideas.filter(i=>!i.isDone&&!i.isSomeday);
+  if(currentEnergy==='low')pool=pool.filter(i=>i.tag==='solo'||i.tag==='productive')||pool;
+  if(currentEnergy==='high')pool=pool.filter(i=>i.tag==='group'||i.tag==='outside')||pool;
+  return pool.length?pool:ideas.filter(i=>!i.isDone&&!i.isSomeday);
+}
+
+function showSug(idea){
+  if(!idea)return;
+  document.getElementById('sug-eye').textContent=idea.tag==='group'?'group hangout':idea.tag==='productive'?'productive task':'solo activity';
+  document.getElementById('sug-title').textContent=idea.text;
+  document.getElementById('sug-meta').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');
+  document.getElementById('skip-q').style.display='none';
+  doneSugText=idea.text;currentDetailId=idea.id;
+}
+
+function goSuggest(){
+  const pool=getPool();
+  if(!pool.length){alert('add some ideas to your list first!');return;}
+  currentSugIdx=Math.floor(Math.random()*pool.length);
+  showSug(pool[currentSugIdx]);goTo('s-suggest');
+}
+
+function goSuggestGroup(){
+  const g=groups.find(x=>x.id===currentGroupId);
+  if(!g||!g.ideas.length){alert('add some ideas to the group list first!');return;}
+  const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];
+  document.getElementById('sug-eye').textContent='group hangout';
+  document.getElementById('sug-title').textContent=idea.text;
+  document.getElementById('sug-meta').textContent='from group list';
+  document.getElementById('skip-q').style.display='none';
+  doneSugText=idea.text;currentDetailId=null;goTo('s-suggest');
+}
+
+function nextSug(){
+  const pool=getPool();if(!pool.length)return;
+  currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
+}
+
+function skipIdea(){
+  skipCount++;
+  const idea=ideas.find(i=>i.id===currentDetailId);
+  if(idea){idea.skipCount=(idea.skipCount||0)+1;saveAll();}
+  if(skipCount>=2)document.getElementById('skip-q').style.display='block';
+  nextSug();
+}
+
+function doIt(){
+  const idea=ideas.find(i=>i.id===currentDetailId);
+  if(idea){idea.isDone=true;saveAll();}
+  document.getElementById('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];
+  document.getElementById('done-sub').textContent=`"${doneSugText}" marked as done.`;
+  goTo('s-done');
+}
+
+function moveToSomeday(){
+  const idea=ideas.find(i=>i.id===currentDetailId);
+  if(idea){idea.isSomeday=true;somedays.push({id:nextId++,text:idea.text,note:'moved from main list'});saveAll();}
+  goTo('s-home');
+}
+
+function energyPick(el,e){
+  document.querySelectorAll('.energy-opt').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');currentEnergy=e;nextSug();
+}
+
+function filterPill(el,f){
+  document.querySelectorAll('.filter-row .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');currentFilter=f;renderIdeas();
+}
+
+function addIdea(){
+  const inp=document.getElementById('new-idea');const val=inp.value.trim();if(!val)return;
+  ideas.push({id:nextId++,text:val,type:'solo',tag:'solo',dateAdded:new Date().toISOString(),skipCount:0,isDone:false,isSomeday:false});
+  inp.value='';saveAll();renderIdeas();
+}
+
+function addSomeday(){
+  const inp=document.getElementById('someday-inp');const val=inp.value.trim();if(!val)return;
+  somedays.push({id:nextId++,text:val,note:'just added'});inp.value='';saveAll();renderSomeday();
+}
+
+function addGroupIdea(){
+  const inp=document.getElementById('group-new-idea');const val=inp.value.trim();if(!val)return;
+  const g=groups.find(x=>x.id===currentGroupId);
+  if(g){g.ideas.push({id:nextId++,text:val,tag:'group'});saveAll();renderGroupDetail(currentGroupId);}
+  inp.value='';
+}
+
+function openDetail(id){
+  const idea=ideas.find(i=>i.id===id);if(!idea)return;
+  currentDetailId=id;doneSugText=idea.text;
+  document.getElementById('detail-title').textContent=idea.text;
+  document.getElementById('detail-added').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');
+  document.getElementById('detail-tags').innerHTML=`<span class="pill on" style="font-size:11px;">${idea.tag}</span><span class="pill on" style="font-size:11px;">${idea.type}</span>`;
+  goTo('s-detail');
+}
+
+function detailDone(){
+  const idea=ideas.find(i=>i.id===currentDetailId);if(idea){idea.isDone=true;saveAll();}
+  document.getElementById('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];
+  document.getElementById('done-sub').textContent=`"${doneSugText}" marked as done.`;
+  goTo('s-done');
+}
+
+function detailToSomeday(){
+  const idea=ideas.find(i=>i.id===currentDetailId);
+  if(idea){idea.isSomeday=true;somedays.push({id:nextId++,text:idea.text,note:'moved from main list'});saveAll();}
+  goTo('s-home');
+}
+
+function removeIdea(){
+  if(confirm('remove this idea?')){ideas=ideas.filter(i=>i.id!==currentDetailId);saveAll();goTo('s-home');}
+}
+
+function openGroup(id){currentGroupId=id;renderGroupDetail(id);goTo('s-groupdetail');}
+
+function createGroup(){
+  const name=prompt('group name?');if(!name||!name.trim())return;
+  groups.push({id:nextId++,name:name.trim().toLowerCase(),members:['ME'],ideas:[]});saveAll();renderGroups();
+}
+
+function showNudge(){
+  const el=document.getElementById('nudge-wrap');
+  if(Math.random()<0.35){
+    el.innerHTML=`<div class="nudge">${nudges[Math.floor(Math.random()*nudges.length)]}</div>`;
+  } else {el.innerHTML='';}
+}
+
+function toggleOnboard(el){
+  el.classList.toggle('on');
+  const chk=el.querySelector('.onboard-check');
+  const inner=el.querySelector('.onboard-inner');
+  chk.classList.toggle('on');
+  inner.style.display=chk.classList.contains('on')?'':'none';
+}
+
+function finishOnboard(){
+  const selected=document.querySelectorAll('.onboard-opt.on');
+  const tagMap={'bowling with friends':'group','try a new restaurant':'group','movie night':'group','explore a new part of town':'outside','game night':'group','start reading a book':'solo','deep clean my room':'productive','go to the gym':'productive','meal prep for the week':'productive','take a photography walk':'outside','cook a recipe i\'ve never tried':'productive','watch a documentary':'solo'};
+  ideas=[];
+  selected.forEach((el,i)=>{
+    const text=el.querySelector('.onboard-opt-text').textContent;
+    const tag=tagMap[text]||'solo';
+    const type=tag==='group'?'group':'solo';
+    ideas.push({id:nextId++,text,type,tag,dateAdded:new Date().toISOString(),skipCount:0,isDone:false,isSomeday:false});
+  });
+  save('wn-onboarded',true);saveAll();
+  document.getElementById('main-nav').style.display='flex';
+  goTo('s-home');
+}
+
+if(onboarded){
+  document.getElementById('main-nav').style.display='flex';
+  goTo('s-home');
+}
+</script>
+</body>
+</html>
