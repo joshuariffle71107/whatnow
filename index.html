@@ -14,7 +14,7 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html,body{height:100%;overflow:hidden;}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;max-width:430px;margin:0 auto;position:relative;}
-    :root{--coral:#C04A35;--coral-light:#FAECE7;--coral-mid:#E8614A;--gray:#888780;--gray-light:#F1EFE8;--gray-mid:#D3D1C7;--teal:#1D9E75;--teal-light:#E1F5EE;--amber:#BA7517;--text:#1a1a1a;--text-muted:#888780;}
+    :root{--coral:#C04A35;--coral-light:#FAECE7;--gray:#888780;--gray-light:#F1EFE8;--teal:#1D9E75;--teal-light:#E1F5EE;--amber:#BA7517;--text:#1a1a1a;}
     .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;padding-bottom:80px;}
     .screen.active{display:flex;}
     .nav{display:flex;justify-content:space-around;padding:10px 0 20px;border-top:0.5px solid #e5e5e5;background:#fff;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100;}
@@ -36,7 +36,7 @@
     .pill.on{background:var(--coral);border-color:var(--coral);color:#fff;}
     .section-label{font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:8px 20px 6px;}
     .idea-list{padding:0 20px;display:flex;flex-direction:column;gap:8px;}
-    .idea-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:0.5px solid #eee;background:#fff;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,0.05);}
+    .idea-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:0.5px solid #eee;background:#fff;cursor:pointer;}
     .idea-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
     .idea-info{flex:1;min-width:0;}
     .idea-text{font-size:14px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -72,10 +72,10 @@
     .done-check{width:36px;height:36px;border-radius:50%;background:var(--teal);}
     .done-title{font-size:26px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;}
     .done-sub{font-size:14px;color:var(--gray);max-width:240px;line-height:1.5;}
-    .done-btn{background:var(--coral);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;font-family:inherit;}
+    .done-btn{background:var(--coral);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
     .done-sec{background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;font-family:inherit;margin-top:4px;}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;border-bottom:0.5px solid #eee;}
-    .detail-label{font-size:14px;color:var(--gray);}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;border-bottom:0.5px solid #eee;gap:12px;}
+    .detail-label{font-size:14px;color:var(--gray);flex-shrink:0;}
     .detail-val{font-size:14px;color:var(--text);font-weight:500;}
     .detail-val-muted{font-size:14px;color:var(--gray);}
     .toggle{width:40px;height:22px;border-radius:11px;background:#ddd;cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0;}
@@ -96,6 +96,19 @@
     .someday-note{font-size:11px;color:var(--gray);font-style:italic;margin-top:2px;}
     .empty{padding:60px 20px;text-align:center;color:var(--gray);font-size:14px;line-height:1.6;}
     .nudge{margin:10px 20px 0;background:var(--coral-light);border-radius:12px;padding:12px 14px;border:0.5px solid #F0997B;font-size:13px;color:#712B13;line-height:1.5;}
+    .auth-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px;gap:14px;}
+    .auth-logo{font-family:Georgia,serif;font-style:italic;font-size:48px;font-weight:700;color:var(--coral);}
+    .auth-sub{font-size:14px;color:var(--gray);line-height:1.5;max-width:260px;text-align:center;}
+    .auth-inp{width:100%;font-size:15px;padding:13px 16px;border-radius:14px;border:0.5px solid #ddd;background:#f9f9f9;color:var(--text);outline:none;font-family:inherit;}
+    .auth-btn{width:100%;background:var(--coral);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+    .auth-btn-sec{width:100%;background:#f9f9f9;color:var(--coral);border:0.5px solid #ddd;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+    .auth-switch{background:none;border:none;color:var(--coral);font-size:13px;cursor:pointer;font-family:inherit;}
+    .auth-err{font-size:13px;color:#E24B4A;min-height:18px;text-align:center;}
+    .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;}
+    .loading-logo{font-family:Georgia,serif;font-style:italic;font-size:36px;font-weight:700;color:var(--coral);}
+    .loading-sub{font-size:13px;color:var(--gray);}
+    .field-inp{font-size:13px;padding:7px 10px;border-radius:10px;border:0.5px solid #ddd;background:#f9f9f9;color:var(--text);outline:none;font-family:inherit;}
+    .member-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #eee;font-size:14px;color:var(--text);}
     .onboard-wrap{display:flex;flex-direction:column;min-height:100vh;padding:56px 20px 100px;}
     .onboard-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:0.5px solid #eee;margin-bottom:8px;cursor:pointer;}
     .onboard-opt.on{border-color:var(--coral);background:var(--coral-light);}
@@ -103,18 +116,38 @@
     .onboard-check{width:20px;height:20px;border-radius:50%;border:1.5px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
     .onboard-check.on{background:var(--coral);border-color:var(--coral);}
     .onboard-inner{width:8px;height:8px;border-radius:50%;background:#fff;}
-    .prog{display:flex;gap:5px;justify-content:center;margin-bottom:24px;}
-    .prog-dot{width:6px;height:6px;border-radius:50%;background:#ddd;}
-    .prog-dot.on{background:var(--coral);}
-    .install-banner{margin:10px 20px 0;background:#f9f9f9;border-radius:12px;padding:12px 14px;border:0.5px solid #eee;font-size:12px;color:var(--gray);line-height:1.5;}
+    .user-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:-4px;}
+    .user-email{font-size:11px;color:var(--gray);}
+    .signout-btn{font-size:11px;color:var(--coral);background:none;border:none;cursor:pointer;font-family:inherit;}
+    .form-group{display:flex;flex-direction:column;gap:6px;width:100%;}
+    .form-label{font-size:12px;color:var(--gray);font-weight:500;}
+    select.field-inp{appearance:none;-webkit-appearance:none;}
   </style>
 </head>
 <body>
 
+<div id="loading" class="loading">
+  <div class="loading-logo">what now?</div>
+  <div class="loading-sub">loading...</div>
+</div>
+
+<!-- AUTH -->
+<div id="s-auth" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-logo">what now?</div>
+    <div class="auth-sub">sign in to save your ideas and share lists with friends</div>
+    <input class="auth-inp" id="auth-email" type="email" placeholder="your email" autocomplete="email"/>
+    <input class="auth-inp" id="auth-pass" type="password" placeholder="password" autocomplete="current-password"/>
+    <div class="auth-err" id="auth-err"></div>
+    <button class="auth-btn" onclick="signIn()">sign in</button>
+    <button class="auth-btn-sec" onclick="signUp()">create account</button>
+    <button class="auth-switch" onclick="resetPass()">forgot password?</button>
+  </div>
+</div>
+
 <!-- ONBOARDING -->
-<div id="s-onboard" class="screen active">
+<div id="s-onboard" class="screen">
   <div class="onboard-wrap">
-    <div class="prog"><div class="prog-dot on"></div><div class="prog-dot"></div><div class="prog-dot"></div></div>
     <h1 style="font-size:28px;font-weight:700;color:var(--text);margin-bottom:4px;font-family:Georgia,serif;font-style:italic;">what now?</h1>
     <p style="font-size:14px;color:var(--gray);margin-bottom:20px;">pick some ideas to get started. we'll add them to your list.</p>
     <div class="section-label" style="padding:0;margin-bottom:10px;">fun things</div>
@@ -132,6 +165,7 @@
     <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">take a photography walk</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
     <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">cook a recipe i've never tried</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
     <div class="onboard-opt" onclick="toggleOnboard(this)"><span class="onboard-opt-text">watch a documentary</span><div class="onboard-check"><div class="onboard-inner" style="display:none"></div></div></div>
+    <div style="height:80px;"></div>
     <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:16px 20px 32px;background:#fff;border-top:0.5px solid #eee;">
       <button class="create-btn" style="margin:0;width:100%;" onclick="finishOnboard()">looks good, let's go</button>
     </div>
@@ -140,7 +174,10 @@
 
 <!-- HOME -->
 <div id="s-home" class="screen">
-  <div class="topbar"><h1>what now?</h1><p>hey, what do you feel like doing?</p></div>
+  <div class="topbar">
+    <div class="user-bar"><span class="user-email" id="user-email-display"></span><button class="signout-btn" onclick="signOut()">sign out</button></div>
+    <h1>what now?</h1><p>hey, what do you feel like doing?</p>
+  </div>
   <div id="nudge-wrap"></div>
   <button class="what-now-btn" onclick="goSuggest()">
     <div class="wn-label">what now?</div>
@@ -211,17 +248,40 @@
 <!-- DETAIL -->
 <div id="s-detail" class="screen">
   <div class="topbar"><button class="back-btn" onclick="goTo('s-home')">← back</button><h1 id="detail-title" style="margin-top:8px;font-size:20px;"></h1></div>
-  <div id="detail-tags" style="display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 16px;"></div>
+  <div id="detail-tags" style="display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 12px;"></div>
   <div class="detail-row"><span class="detail-label">added</span><span class="detail-val" id="detail-added"></span></div>
-  <div class="detail-row"><span class="detail-label">reminder</span><span class="detail-val-muted">none set</span></div>
-  <div class="detail-row"><span class="detail-label">repeat</span><span class="detail-val-muted">none</span></div>
-  <div class="detail-row"><span class="detail-label">location</span><span class="detail-val-muted">none set</span></div>
-  <div class="detail-row"><span class="detail-label">expires</span><span class="detail-val-muted">never</span></div>
-  <div class="detail-row"><span class="detail-label">private</span><button class="toggle" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'20px':'2px'"><div class="toggle-knob"></div></button></div>
+  <div class="detail-row">
+    <span class="detail-label">reminder</span>
+    <input class="field-inp" id="detail-reminder" type="datetime-local"/>
+  </div>
+  <div class="detail-row">
+    <span class="detail-label">repeat</span>
+    <select class="field-inp" id="detail-repeat">
+      <option value="none">none</option>
+      <option value="daily">every day</option>
+      <option value="weekly">every week</option>
+      <option value="sundays">every sunday</option>
+      <option value="weekends">every weekend</option>
+      <option value="biweekly">every other day</option>
+    </select>
+  </div>
+  <div class="detail-row">
+    <span class="detail-label">location</span>
+    <input class="field-inp" id="detail-location" placeholder="e.g. State St" style="max-width:160px;"/>
+  </div>
+  <div class="detail-row">
+    <span class="detail-label">expires</span>
+    <input class="field-inp" id="detail-expires" type="date"/>
+  </div>
+  <div class="detail-row">
+    <span class="detail-label">private</span>
+    <button class="toggle" id="priv-toggle" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.left=this.classList.contains('on')?'20px':'2px'"><div class="toggle-knob"></div></button>
+  </div>
   <div class="detail-actions">
+    <button class="add-btn" style="width:100%;padding:13px;border-radius:12px;" onclick="saveDetail()">save changes</button>
     <div class="detail-btn-row">
       <button class="detail-btn" onclick="detailToSomeday()">move to someday</button>
-      <button class="detail-btn detail-btn-p" onclick="detailDone()">done this</button>
+      <button class="detail-btn detail-btn-p" onclick="detailDone()">done this ✓</button>
     </div>
     <button class="remove-btn" onclick="removeIdea()">remove idea</button>
   </div>
@@ -231,7 +291,22 @@
 <div id="s-groups" class="screen">
   <div class="topbar"><h1>groups</h1><p>shared lists with your people</p></div>
   <div id="group-list"></div>
-  <button class="create-btn" onclick="createGroup()">+ create a group</button>
+  <button class="create-btn" onclick="goTo('s-creategroup')">+ create a group</button>
+</div>
+
+<!-- CREATE GROUP -->
+<div id="s-creategroup" class="screen">
+  <div class="topbar"><button class="back-btn" onclick="goTo('s-groups')">← back</button><h1 style="margin-top:8px;">new group</h1><p>invite friends who have a What Now? account</p></div>
+  <div style="padding:0 20px;display:flex;flex-direction:column;gap:12px;">
+    <div class="form-group"><div class="form-label">group name</div><input class="add-inp" id="new-group-name" placeholder="e.g. the usual crew"/></div>
+    <div class="form-group"><div class="form-label">invite friends by email</div>
+      <input class="add-inp" id="invite-email-1" type="email" placeholder="friend's email"/>
+      <input class="add-inp" id="invite-email-2" type="email" placeholder="another friend (optional)"/>
+      <input class="add-inp" id="invite-email-3" type="email" placeholder="another friend (optional)"/>
+    </div>
+    <button class="add-btn" style="padding:13px;border-radius:12px;" onclick="createGroup()">create group</button>
+    <p style="font-size:12px;color:var(--gray);text-align:center;line-height:1.5;">friends will see the group automatically when they open the app</p>
+  </div>
 </div>
 
 <!-- GROUP DETAIL -->
@@ -247,13 +322,15 @@
     <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()"/>
     <button class="add-btn" onclick="addGroupIdea()">+ add</button>
   </div>
+  <div class="section-label" style="margin-top:4px;">members</div>
+  <div id="group-members" style="padding:0 20px 20px;"></div>
 </div>
 
 <!-- SOMEDAY -->
 <div id="s-someday" class="screen">
   <div class="topbar"><h1>someday.</h1><p>intentions, not obligations.</p></div>
   <div class="idea-list" id="someday-list"></div>
-  <p style="padding:12px 20px;font-size:12px;color:var(--gray);font-style:italic;line-height:1.6;">the app will nudge you on these when the moment feels right. no pressure.</p>
+  <p style="padding:12px 20px;font-size:12px;color:var(--gray);font-style:italic;line-height:1.6;">tap any intention to move it to your main list when you're ready.</p>
   <div class="add-row">
     <input class="add-inp" id="someday-inp" placeholder="a someday intention..." onkeydown="if(event.key==='Enter')addSomeday()"/>
     <button class="add-btn" onclick="addSomeday()">+ add</button>
@@ -266,270 +343,186 @@
   <button class="nav-btn" onclick="goTo('s-someday')"><span class="nav-icon">◇</span><div class="nav-dot" id="nd-someday"></div><span class="nav-label" id="nl-someday">someday</span></button>
 </div>
 
-<script>
-const CORAL='#C04A35',TEAL='#1D9E75',AMBER='#BA7517',GRAY='#888780';
-const nudges=["it's friday... what now? 👀","you haven't done anything from your list in a while. just saying.","saturday afternoon with nothing to do? your list has thoughts.","reminder that doing nothing is always an option. but also, you have ideas waiting.","it's the weekend. what now?","your someday list is getting dusty. maybe today's the day?"];
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut as fbSignOut,onAuthStateChanged,sendPasswordResetEmail}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const app=initializeApp({apiKey:"AIzaSyCS-pacDnn-wPq1K9iG8n0z1bB93UlTjPY",authDomain:"whatnow-b6162.firebaseapp.com",projectId:"whatnow-b6162",storageBucket:"whatnow-b6162.firebasestorage.app",messagingSenderId:"880600854409",appId:"1:880600854409:web:ea91cd985007e64e363b58"});
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const TEAL='#1D9E75',AMBER='#BA7517',CORAL='#C04A35',GRAY='#888780';
+const nudges=["it's friday... what now? 👀","you haven't done anything from your list in a while. just saying.","saturday with nothing to do? your list has thoughts.","it's the weekend. what now?","your someday list is getting dusty. maybe today's the day?","doing nothing is always an option. but you have ideas waiting."];
 const oneLiners=["look at you go.","knew you had it in you.","look at you being a person.","not bad. not bad at all.","proud of you honestly."];
+const tagMap={'bowling with friends':'group','try a new restaurant':'group','movie night':'group','explore a new part of town':'outside','game night':'group','start reading a book':'solo','deep clean my room':'productive','go to the gym':'productive','meal prep for the week':'productive','take a photography walk':'outside',"cook a recipe i've never tried":'productive','watch a documentary':'solo'};
 
-function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
-function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+let currentUser=null,ideas=[],somedays=[],groups=[],currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentEnergy='medium',skipCount=0,doneSugText='',unsubIdeas=null,unsubSomedays=null,unsubGroups=null;
 
-function daysAgo(n){const d=new Date();d.setDate(d.getDate()-n);return d.toISOString();}
-function daysSince(d){return Math.floor((Date.now()-new Date(d))/(864e5));}
-function ageText(d){const n=daysSince(d);if(n===0)return'just added';if(n===1)return'added yesterday';if(n<7)return`added ${n} days ago`;if(n<14)return'added 1 week ago';if(n<30)return`added ${Math.floor(n/7)} weeks ago`;return`added ${Math.floor(n/30)} month${Math.floor(n/30)>1?'s':''} ago`;}
-function isOld(d){return daysSince(d)>14;}
+function daysSince(ts){if(!ts)return 0;const d=ts.toDate?ts.toDate():new Date(ts);return Math.floor((Date.now()-d)/864e5);}
+function ageText(ts){const n=daysSince(ts);if(n===0)return'just added';if(n===1)return'added yesterday';if(n<7)return`added ${n} days ago`;if(n<14)return'added 1 week ago';if(n<30)return`added ${Math.floor(n/7)} weeks ago`;return`added ${Math.floor(n/30)} month${Math.floor(n/30)>1?'s':''} ago`;}
+function isOld(ts){return daysSince(ts)>14;}
 function tagClass(t){return t==='solo'?'tag-solo':t==='group'?'tag-group':t==='productive'||t==='outside'||t==='free'?'tag-prod':'tag-someday';}
 function dotColor(t){return t==='group'?TEAL:t==='productive'||t==='outside'?AMBER:CORAL;}
-
-const defaultIdeas=[
-  {id:1,text:'bowling with friends',type:'group',tag:'group',dateAdded:daysAgo(3),skipCount:0,isDone:false,isSomeday:false},
-  {id:2,text:'try that ramen place',type:'group',tag:'group',dateAdded:daysAgo(7),skipCount:0,isDone:false,isSomeday:false},
-  {id:3,text:'start reading a book',type:'solo',tag:'solo',dateAdded:daysAgo(14),skipCount:0,isDone:false,isSomeday:false},
-  {id:4,text:'deep clean my room',type:'solo',tag:'productive',dateAdded:daysAgo(30),skipCount:0,isDone:false,isSomeday:false},
-  {id:5,text:'go to the gym',type:'solo',tag:'productive',dateAdded:daysAgo(10),skipCount:0,isDone:false,isSomeday:false},
-  {id:6,text:'explore a new part of town',type:'solo',tag:'outside',dateAdded:daysAgo(5),skipCount:0,isDone:false,isSomeday:false},
-  {id:7,text:'game night',type:'group',tag:'group',dateAdded:daysAgo(4),skipCount:0,isDone:false,isSomeday:false},
-];
-const defaultSomedays=[
-  {id:101,text:'learn to cook one new thing a month',note:'been meaning to for a while'},
-  {id:102,text:'start journaling',note:'maybe this week feels right'},
-  {id:103,text:'plan a weekend trip somewhere new',note:'added a while back'},
-];
-const defaultGroups=[
-  {id:1,name:'the usual crew',members:['JK','ME','TR','AL'],ideas:[{id:1,text:'bowling',tag:'group'},{id:2,text:'ramen place on state st',tag:'group'},{id:3,text:"game night at jake's",tag:'group'}]},
-  {id:2,name:'roommates',members:['AL','BS','ME'],ideas:[{id:1,text:'movie night',tag:'group'},{id:2,text:'deep clean the apartment',tag:'productive'}]},
-];
-
-let ideas=load('wn-ideas',defaultIdeas);
-let somedays=load('wn-somedays',defaultSomedays);
-let groups=load('wn-groups',defaultGroups);
-let onboarded=load('wn-onboarded',false);
-let nextId=load('wn-nextid',300);
-let currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentEnergy='medium',skipCount=0,doneSugText='';
-
-function saveAll(){save('wn-ideas',ideas);save('wn-somedays',somedays);save('wn-groups',groups);save('wn-nextid',nextId);}
+function $(id){return document.getElementById(id);}
 
 function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  const nav=document.getElementById('main-nav');
-  const noNav=['s-onboard','s-suggest','s-done','s-detail','s-groupdetail'];
-  nav.style.display=noNav.includes(id)?'none':'flex';
+  $(id).classList.add('active');
+  const noNav=['s-auth','s-onboard','s-suggest','s-done','s-detail','s-groupdetail','s-creategroup'];
+  $('main-nav').style.display=noNav.includes(id)?'none':'flex';
   ['home','groups','someday'].forEach(t=>{
-    const on=(t==='home'&&(id==='s-home'))|| (t==='groups'&&(id==='s-groups'||id==='s-groupdetail'))|| (t==='someday'&&id==='s-someday');
-    document.getElementById(`nd-${t}`).classList.toggle('on',on);
-    document.getElementById(`nl-${t}`).classList.toggle('on',on);
+    const on=(t==='home'&&id==='s-home')||(t==='groups'&&['s-groups','s-groupdetail','s-creategroup'].includes(id))||(t==='someday'&&id==='s-someday');
+    $(`nd-${t}`).classList.toggle('on',on);
+    $(`nl-${t}`).classList.toggle('on',on);
   });
   if(id==='s-home'){renderIdeas();showNudge();}
   if(id==='s-groups')renderGroups();
   if(id==='s-someday')renderSomeday();
   window.scrollTo(0,0);
 }
+window.goTo=goTo;
+
+onAuthStateChanged(auth,async user=>{
+  $('loading').style.display='none';
+  if(user){
+    currentUser=user;
+    $('user-email-display').textContent=user.email;
+    const profile=await getDoc(doc(db,'users',user.uid));
+    if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}
+    else{setupListeners();$('main-nav').style.display='flex';goTo('s-home');}
+  } else {currentUser=null;goTo('s-auth');}
+});
+
+function setupListeners(){
+  if(unsubIdeas)unsubIdeas();if(unsubSomedays)unsubSomedays();if(unsubGroups)unsubGroups();
+  const uid=currentUser.uid;
+  unsubIdeas=onSnapshot(query(collection(db,'ideas'),where('userId','==',uid),where('isDone','==',false),where('isSomeday','==',false)),snap=>{ideas=snap.docs.map(d=>({id:d.id,...d.data()}));renderIdeas();});
+  unsubSomedays=onSnapshot(query(collection(db,'ideas'),where('userId','==',uid),where('isSomeday','==',true)),snap=>{somedays=snap.docs.map(d=>({id:d.id,...d.data()}));renderSomeday();});
+  unsubGroups=onSnapshot(query(collection(db,'groups'),where('members','array-contains',uid)),snap=>{groups=snap.docs.map(d=>({id:d.id,...d.data()}));renderGroups();});
+}
+
+function friendlyError(code){return({'auth/user-not-found':'no account with that email','auth/wrong-password':'wrong password','auth/invalid-credential':'wrong email or password','auth/email-already-in-use':'an account already exists with that email','auth/invalid-email':'invalid email address','auth/too-many-requests':'too many attempts, try again later','auth/weak-password':'password must be at least 6 characters'})[code]||'something went wrong, try again';}
+
+async function signIn(){const email=$('auth-email').value.trim(),pass=$('auth-pass').value;try{await signInWithEmailAndPassword(auth,email,pass);}catch(e){$('auth-err').textContent=friendlyError(e.code);}}
+window.signIn=signIn;
+async function signUp(){const email=$('auth-email').value.trim(),pass=$('auth-pass').value;if(pass.length<6){$('auth-err').textContent='password must be at least 6 characters';return;}try{await createUserWithEmailAndPassword(auth,email,pass);}catch(e){$('auth-err').textContent=friendlyError(e.code);}}
+window.signUp=signUp;
+async function resetPass(){const email=$('auth-email').value.trim();if(!email){$('auth-err').textContent='enter your email first';return;}try{await sendPasswordResetEmail(auth,email);$('auth-err').textContent='reset email sent!';}catch(e){$('auth-err').textContent=friendlyError(e.code);}}
+window.resetPass=resetPass;
+async function signOut(){if(unsubIdeas)unsubIdeas();if(unsubSomedays)unsubSomedays();if(unsubGroups)unsubGroups();ideas=[];somedays=[];groups=[];currentUser=null;await fbSignOut(auth);}
+window.signOut=signOut;
+
+function toggleOnboard(el){el.classList.toggle('on');const chk=el.querySelector('.onboard-check'),inner=el.querySelector('.onboard-inner');chk.classList.toggle('on');inner.style.display=chk.classList.contains('on')?'':'none';}
+window.toggleOnboard=toggleOnboard;
+
+async function finishOnboard(){
+  const selected=document.querySelectorAll('.onboard-opt.on');
+  const batch=[];
+  selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,type:tag==='group'?'group':'solo',tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false}));});
+  await Promise.all(batch);
+  await setDoc(doc(db,'users',currentUser.uid),{email:currentUser.email,onboarded:true});
+  setupListeners();$('main-nav').style.display='flex';goTo('s-home');
+}
+window.finishOnboard=finishOnboard;
 
 function renderIdeas(){
-  const el=document.getElementById('idea-list');
-  const active=ideas.filter(i=>!i.isDone&&!i.isSomeday&&(currentFilter==='anything'||i.tag===currentFilter||i.type===currentFilter));
+  const el=$('idea-list');if(!el)return;
+  const active=ideas.filter(i=>currentFilter==='anything'||i.tag===currentFilter||i.type===currentFilter);
   if(!active.length){el.innerHTML='<div class="empty">your list is empty!<br>add some ideas below.</div>';return;}
   el.innerHTML='';
-  active.forEach(idea=>{
-    const row=document.createElement('div');row.className='idea-row';
-    const old=isOld(idea.dateAdded)?' · been a while!':'';
-    row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag)}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div><div class="idea-age">${ageText(idea.dateAdded)}${old}</div></div><span class="idea-tag ${tagClass(idea.tag)}">${idea.tag}</span>`;
-    row.onclick=()=>openDetail(idea.id);
-    el.appendChild(row);
-  });
+  active.forEach(idea=>{const row=document.createElement('div');row.className='idea-row';const old=isOld(idea.dateAdded)?' · been a while!':'';row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag)}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div><div class="idea-age">${ageText(idea.dateAdded)}${old}</div></div><span class="idea-tag ${tagClass(idea.tag)}">${idea.tag}</span>`;row.onclick=()=>openDetail(idea.id);el.appendChild(row);});
 }
 
 function renderGroups(){
-  const el=document.getElementById('group-list');el.innerHTML='';
+  const el=$('group-list');if(!el)return;el.innerHTML='';
   if(!groups.length){el.innerHTML='<div class="empty">no groups yet.<br>create one and add your friends!</div>';return;}
-  groups.forEach(g=>{
-    const card=document.createElement('div');card.className='group-card';
-    const avs=g.members.map(m=>`<div class="avatar">${m}</div>`).join('');
-    card.innerHTML=`<div class="group-name">${g.name}</div><div class="group-meta">${g.members.length} members · ${g.ideas.length} ideas</div><div class="avatar-row">${avs}</div>`;
-    card.onclick=()=>openGroup(g.id);el.appendChild(card);
-  });
+  groups.forEach(g=>{const card=document.createElement('div');card.className='group-card';const avs=(g.memberEmails||[]).slice(0,4).map(e=>`<div class="avatar">${e.slice(0,2).toUpperCase()}</div>`).join('');card.innerHTML=`<div class="group-name">${g.name}</div><div class="group-meta">${(g.members||[]).length} members · ${(g.ideas||[]).length} ideas</div><div class="avatar-row">${avs}</div>`;card.onclick=()=>openGroup(g.id);el.appendChild(card);});
 }
 
 function renderSomeday(){
-  const el=document.getElementById('someday-list');el.innerHTML='';
+  const el=$('someday-list');if(!el)return;el.innerHTML='';
   if(!somedays.length){el.innerHTML='<div class="empty">no intentions yet.<br>add something you\'ve been meaning to do.</div>';return;}
-  somedays.forEach(s=>{
-    const row=document.createElement('div');row.className='idea-row';
-    row.innerHTML=`<div class="idea-dot" style="background:${GRAY}"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note}</div></div><span class="idea-tag tag-someday">someday</span>`;
-    row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){somedays=somedays.filter(x=>x.id!==s.id);ideas.push({id:nextId++,text:s.text,type:'solo',tag:'solo',dateAdded:new Date().toISOString(),skipCount:0,isDone:false,isSomeday:false});saveAll();renderSomeday();}};
-    el.appendChild(row);
-  });
+  somedays.forEach(s=>{const row=document.createElement('div');row.className='idea-row';row.innerHTML=`<div class="idea-dot" style="background:${GRAY}"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note||'someday intention'}</div></div><span class="idea-tag tag-someday">someday</span>`;row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){updateDoc(doc(db,'ideas',s.id),{isSomeday:false,note:null});}};el.appendChild(row);});
 }
 
 function renderGroupDetail(gid){
   const g=groups.find(x=>x.id===gid);if(!g)return;
-  document.getElementById('gd-name').textContent=g.name;
-  document.getElementById('gd-meta').textContent=`${g.members.length} members`;
-  const el=document.getElementById('group-idea-list');el.innerHTML='';
-  g.ideas.forEach(idea=>{
-    const row=document.createElement('div');row.className='idea-row';
-    row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag)}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div></div><span class="idea-tag ${tagClass(idea.tag)}">${idea.tag}</span>`;
-    el.appendChild(row);
-  });
+  $('gd-name').textContent=g.name;$('gd-meta').textContent=`${(g.members||[]).length} members`;
+  const el=$('group-idea-list');el.innerHTML='';
+  (g.ideas||[]).forEach(idea=>{const row=document.createElement('div');row.className='idea-row';row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag||'group')}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div></div><span class="idea-tag ${tagClass(idea.tag||'group')}">${idea.tag||'group'}</span>`;el.appendChild(row);});
+  const membersEl=$('group-members');membersEl.innerHTML='';
+  (g.memberEmails||[]).forEach(email=>{const row=document.createElement('div');row.className='member-row';row.innerHTML=`<div class="avatar" style="margin-right:8px;">${email.slice(0,2).toUpperCase()}</div><span>${email}</span>`;membersEl.appendChild(row);});
 }
 
-function getPool(){
-  let pool=ideas.filter(i=>!i.isDone&&!i.isSomeday);
-  if(currentEnergy==='low')pool=pool.filter(i=>i.tag==='solo'||i.tag==='productive')||pool;
-  if(currentEnergy==='high')pool=pool.filter(i=>i.tag==='group'||i.tag==='outside')||pool;
-  return pool.length?pool:ideas.filter(i=>!i.isDone&&!i.isSomeday);
-}
+function getPool(){let pool=[...ideas];if(currentEnergy==='low'){const l=pool.filter(i=>i.tag==='solo'||i.tag==='productive');if(l.length)pool=l;}if(currentEnergy==='high'){const h=pool.filter(i=>i.tag==='group'||i.tag==='outside');if(h.length)pool=h;}return pool;}
 
-function showSug(idea){
-  if(!idea)return;
-  document.getElementById('sug-eye').textContent=idea.tag==='group'?'group hangout':idea.tag==='productive'?'productive task':'solo activity';
-  document.getElementById('sug-title').textContent=idea.text;
-  document.getElementById('sug-meta').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');
-  document.getElementById('skip-q').style.display='none';
-  doneSugText=idea.text;currentDetailId=idea.id;
-}
+function showSug(idea){if(!idea)return;$('sug-eye').textContent=idea.tag==='group'?'group hangout':idea.tag==='productive'?'productive task':'solo activity';$('sug-title').textContent=idea.text;$('sug-meta').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=idea.id;}
 
-function goSuggest(){
-  const pool=getPool();
-  if(!pool.length){alert('add some ideas to your list first!');return;}
-  currentSugIdx=Math.floor(Math.random()*pool.length);
-  showSug(pool[currentSugIdx]);goTo('s-suggest');
-}
-
-function goSuggestGroup(){
-  const g=groups.find(x=>x.id===currentGroupId);
-  if(!g||!g.ideas.length){alert('add some ideas to the group list first!');return;}
-  const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];
-  document.getElementById('sug-eye').textContent='group hangout';
-  document.getElementById('sug-title').textContent=idea.text;
-  document.getElementById('sug-meta').textContent='from group list';
-  document.getElementById('skip-q').style.display='none';
-  doneSugText=idea.text;currentDetailId=null;goTo('s-suggest');
-}
-
-function nextSug(){
-  const pool=getPool();if(!pool.length)return;
-  currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
-}
-
-function skipIdea(){
-  skipCount++;
-  const idea=ideas.find(i=>i.id===currentDetailId);
-  if(idea){idea.skipCount=(idea.skipCount||0)+1;saveAll();}
-  if(skipCount>=2)document.getElementById('skip-q').style.display='block';
-  nextSug();
-}
-
-function doIt(){
-  const idea=ideas.find(i=>i.id===currentDetailId);
-  if(idea){idea.isDone=true;saveAll();}
-  document.getElementById('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];
-  document.getElementById('done-sub').textContent=`"${doneSugText}" marked as done.`;
-  goTo('s-done');
-}
-
-function moveToSomeday(){
-  const idea=ideas.find(i=>i.id===currentDetailId);
-  if(idea){idea.isSomeday=true;somedays.push({id:nextId++,text:idea.text,note:'moved from main list'});saveAll();}
-  goTo('s-home');
-}
-
-function energyPick(el,e){
-  document.querySelectorAll('.energy-opt').forEach(x=>x.classList.remove('on'));
-  el.classList.add('on');currentEnergy=e;nextSug();
-}
-
-function filterPill(el,f){
-  document.querySelectorAll('.filter-row .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');currentFilter=f;renderIdeas();
-}
-
-function addIdea(){
-  const inp=document.getElementById('new-idea');const val=inp.value.trim();if(!val)return;
-  ideas.push({id:nextId++,text:val,type:'solo',tag:'solo',dateAdded:new Date().toISOString(),skipCount:0,isDone:false,isSomeday:false});
-  inp.value='';saveAll();renderIdeas();
-}
-
-function addSomeday(){
-  const inp=document.getElementById('someday-inp');const val=inp.value.trim();if(!val)return;
-  somedays.push({id:nextId++,text:val,note:'just added'});inp.value='';saveAll();renderSomeday();
-}
-
-function addGroupIdea(){
-  const inp=document.getElementById('group-new-idea');const val=inp.value.trim();if(!val)return;
-  const g=groups.find(x=>x.id===currentGroupId);
-  if(g){g.ideas.push({id:nextId++,text:val,tag:'group'});saveAll();renderGroupDetail(currentGroupId);}
-  inp.value='';
-}
+function goSuggest(){const pool=getPool();if(!pool.length){alert('add some ideas to your list first!');return;}currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');}
+window.goSuggest=goSuggest;
+function goSuggestGroup(){const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];$('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;goTo('s-suggest');}
+window.goSuggestGroup=goSuggestGroup;
+function nextSug(){const pool=getPool();if(!pool.length)return;currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);}
+window.nextSug=nextSug;
+function skipIdea(){skipCount++;if(currentDetailId){const idea=ideas.find(i=>i.id===currentDetailId);updateDoc(doc(db,'ideas',currentDetailId),{skipCount:(idea?.skipCount||0)+1});}if(skipCount>=2)$('skip-q').style.display='block';nextSug();}
+window.skipIdea=skipIdea;
+async function doIt(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});$('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];$('done-sub').textContent=`"${doneSugText}" marked as done.`;goTo('s-done');}
+window.doIt=doIt;
+async function moveToSomeday(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isSomeday:true,note:'moved from main list'});goTo('s-home');}
+window.moveToSomeday=moveToSomeday;
+function energyPick(el,e){document.querySelectorAll('.energy-opt').forEach(x=>x.classList.remove('on'));el.classList.add('on');currentEnergy=e;nextSug();}
+window.energyPick=energyPick;
+function filterPill(el,f){document.querySelectorAll('.filter-row .pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');currentFilter=f;renderIdeas();}
+window.filterPill=filterPill;
+async function addIdea(){const inp=$('new-idea');const val=inp.value.trim();if(!val)return;await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,type:'solo',tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});inp.value='';}
+window.addIdea=addIdea;
+async function addSomeday(){const inp=$('someday-inp');const val=inp.value.trim();if(!val)return;await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,type:'solo',tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:true,note:'just added'});inp.value='';}
+window.addSomeday=addSomeday;
+async function addGroupIdea(){const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;const g=groups.find(x=>x.id===currentGroupId);if(!g)return;await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:'group'}]});inp.value='';}
+window.addGroupIdea=addGroupIdea;
 
 function openDetail(id){
   const idea=ideas.find(i=>i.id===id);if(!idea)return;
   currentDetailId=id;doneSugText=idea.text;
-  document.getElementById('detail-title').textContent=idea.text;
-  document.getElementById('detail-added').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');
-  document.getElementById('detail-tags').innerHTML=`<span class="pill on" style="font-size:11px;">${idea.tag}</span><span class="pill on" style="font-size:11px;">${idea.type}</span>`;
+  $('detail-title').textContent=idea.text;
+  $('detail-added').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');
+  $('detail-tags').innerHTML=`<span class="pill on" style="font-size:11px;">${idea.tag}</span><span class="pill on" style="font-size:11px;">${idea.type}</span>`;
+  $('detail-reminder').value=idea.reminder||'';
+  $('detail-repeat').value=idea.repeat||'none';
+  $('detail-location').value=idea.location||'';
+  $('detail-expires').value=idea.expires||'';
+  const tog=$('priv-toggle');tog.classList.toggle('on',!!idea.isPrivate);tog.querySelector('.toggle-knob').style.left=idea.isPrivate?'20px':'2px';
   goTo('s-detail');
 }
 
-function detailDone(){
-  const idea=ideas.find(i=>i.id===currentDetailId);if(idea){idea.isDone=true;saveAll();}
-  document.getElementById('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];
-  document.getElementById('done-sub').textContent=`"${doneSugText}" marked as done.`;
-  goTo('s-done');
-}
-
-function detailToSomeday(){
-  const idea=ideas.find(i=>i.id===currentDetailId);
-  if(idea){idea.isSomeday=true;somedays.push({id:nextId++,text:idea.text,note:'moved from main list'});saveAll();}
+async function saveDetail(){
+  if(!currentDetailId)return;
+  await updateDoc(doc(db,'ideas',currentDetailId),{reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});
   goTo('s-home');
 }
-
-function removeIdea(){
-  if(confirm('remove this idea?')){ideas=ideas.filter(i=>i.id!==currentDetailId);saveAll();goTo('s-home');}
-}
-
+window.saveDetail=saveDetail;
+async function detailDone(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});$('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];$('done-sub').textContent=`"${doneSugText}" marked as done.`;goTo('s-done');}
+window.detailDone=detailDone;
+async function detailToSomeday(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isSomeday:true,note:'moved from main list'});goTo('s-home');}
+window.detailToSomeday=detailToSomeday;
+async function removeIdea(){if(confirm('remove this idea?')){await deleteDoc(doc(db,'ideas',currentDetailId));goTo('s-home');}}
+window.removeIdea=removeIdea;
 function openGroup(id){currentGroupId=id;renderGroupDetail(id);goTo('s-groupdetail');}
+window.openGroup=openGroup;
 
-function createGroup(){
-  const name=prompt('group name?');if(!name||!name.trim())return;
-  groups.push({id:nextId++,name:name.trim().toLowerCase(),members:['ME'],ideas:[]});saveAll();renderGroups();
+async function createGroup(){
+  const name=$('new-group-name').value.trim();if(!name){alert('give your group a name');return;}
+  const emails=[$('invite-email-1'),$('invite-email-2'),$('invite-email-3')].map(el=>el.value.trim()).filter(Boolean);
+  const invitedUids=[];
+  for(const email of emails){const snap=await getDocs(query(collection(db,'users'),where('email','==',email)));if(!snap.empty)invitedUids.push(snap.docs[0].id);}
+  await addDoc(collection(db,'groups'),{name:name.toLowerCase(),members:[currentUser.uid,...invitedUids],memberEmails:[currentUser.email,...emails],ideas:[],createdBy:currentUser.uid,createdAt:serverTimestamp()});
+  ['new-group-name','invite-email-1','invite-email-2','invite-email-3'].forEach(id=>{$(id).value='';});
+  goTo('s-groups');
 }
+window.createGroup=createGroup;
 
-function showNudge(){
-  const el=document.getElementById('nudge-wrap');
-  if(Math.random()<0.35){
-    el.innerHTML=`<div class="nudge">${nudges[Math.floor(Math.random()*nudges.length)]}</div>`;
-  } else {el.innerHTML='';}
-}
-
-function toggleOnboard(el){
-  el.classList.toggle('on');
-  const chk=el.querySelector('.onboard-check');
-  const inner=el.querySelector('.onboard-inner');
-  chk.classList.toggle('on');
-  inner.style.display=chk.classList.contains('on')?'':'none';
-}
-
-function finishOnboard(){
-  const selected=document.querySelectorAll('.onboard-opt.on');
-  const tagMap={'bowling with friends':'group','try a new restaurant':'group','movie night':'group','explore a new part of town':'outside','game night':'group','start reading a book':'solo','deep clean my room':'productive','go to the gym':'productive','meal prep for the week':'productive','take a photography walk':'outside','cook a recipe i\'ve never tried':'productive','watch a documentary':'solo'};
-  ideas=[];
-  selected.forEach((el,i)=>{
-    const text=el.querySelector('.onboard-opt-text').textContent;
-    const tag=tagMap[text]||'solo';
-    const type=tag==='group'?'group':'solo';
-    ideas.push({id:nextId++,text,type,tag,dateAdded:new Date().toISOString(),skipCount:0,isDone:false,isSomeday:false});
-  });
-  save('wn-onboarded',true);saveAll();
-  document.getElementById('main-nav').style.display='flex';
-  goTo('s-home');
-}
-
-if(onboarded){
-  document.getElementById('main-nav').style.display='flex';
-  goTo('s-home');
-}
+function showNudge(){const el=$('nudge-wrap');if(Math.random()<0.3)el.innerHTML=`<div class="nudge">${nudges[Math.floor(Math.random()*nudges.length)]}</div>`;else el.innerHTML='';}
 </script>
 </body>
 </html>
