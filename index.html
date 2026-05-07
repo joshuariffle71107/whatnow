@@ -97,13 +97,13 @@
     .nudge{margin:10px 20px 0;background:var(--coral-light);border-radius:12px;padding:12px 14px;border:0.5px solid #F0997B;font-size:13px;color:#712B13;line-height:1.5;}
     .auth-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px;gap:14px;}
     .auth-logo{font-family:Georgia,serif;font-style:italic;font-size:48px;font-weight:700;color:var(--coral);}
-    .auth-sub{font-size:14px;color:var(--gray);line-height:1.5;max-width:260px;text-align:center;}
+    .auth-sub{font-size:14px;color:var(--gray);line-height:1.5;max-width:280px;text-align:center;}
     .auth-inp{width:100%;font-size:15px;padding:13px 16px;border-radius:14px;border:0.5px solid #ddd;background:#f9f9f9;color:var(--text);outline:none;font-family:inherit;}
     .auth-btn{width:100%;background:var(--coral);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
     .auth-btn-sec{width:100%;background:#f9f9f9;color:var(--coral);border:0.5px solid #ddd;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
     .auth-switch{background:none;border:none;color:var(--coral);font-size:13px;cursor:pointer;font-family:inherit;}
-    .auth-err{font-size:13px;color:#E24B4A;min-height:18px;text-align:center;}
-    .auth-ok{font-size:13px;color:var(--teal);min-height:18px;text-align:center;}
+    .auth-err{font-size:13px;color:#E24B4A;min-height:18px;text-align:center;width:100%;}
+    .auth-ok{font-size:13px;color:var(--teal);min-height:18px;text-align:center;width:100%;}
     .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;}
     .loading-logo{font-family:Georgia,serif;font-style:italic;font-size:36px;font-weight:700;color:var(--coral);}
     .loading-sub{font-size:13px;color:var(--gray);}
@@ -117,24 +117,24 @@
     .onboard-check.on{background:var(--coral);border-color:var(--coral);}
     .onboard-inner{width:8px;height:8px;border-radius:50%;background:#fff;}
     .username-wrap{position:relative;width:100%;}
-    .username-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--gray);pointer-events:none;}
-    .username-inp{width:100%;font-size:15px;padding:13px 16px 13px 28px;border-radius:14px;border:0.5px solid #ddd;background:#f9f9f9;color:var(--text);outline:none;font-family:inherit;}
-    .username-status{font-size:12px;min-height:16px;margin-top:-6px;}
+    .username-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--gray);pointer-events:none;z-index:1;}
+    .username-inp{width:100%;font-size:15px;padding:13px 16px 13px 30px;border-radius:14px;border:0.5px solid #ddd;background:#f9f9f9;color:var(--text);outline:none;font-family:inherit;}
+    .username-status{font-size:12px;min-height:16px;}
     .invite-row{display:flex;align-items:center;gap:8px;width:100%;}
     .invite-prefix{font-size:15px;color:var(--gray);flex-shrink:0;font-weight:500;}
     select.field-inp{appearance:none;-webkit-appearance:none;}
     .form-group{display:flex;flex-direction:column;gap:8px;width:100%;}
     .form-label{font-size:12px;color:var(--gray);font-weight:500;}
-    .profile-avatar{width:72px;height:72px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;margin:0 auto 8px;}
+    .profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 10px;letter-spacing:1px;}
     .profile-username{font-size:22px;font-weight:700;color:var(--text);text-align:center;}
-    .profile-email{font-size:13px;color:var(--gray);text-align:center;margin-top:2px;}
-    .profile-section{margin:16px 20px 0;background:#f9f9f9;border-radius:14px;overflow:hidden;border:0.5px solid #eee;}
+    .profile-email-text{font-size:13px;color:var(--gray);text-align:center;margin-top:3px;}
+    .profile-section{margin:0 20px;background:#f9f9f9;border-radius:14px;overflow:hidden;border:0.5px solid #eee;}
     .profile-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid #eee;cursor:pointer;}
     .profile-row:last-child{border-bottom:none;}
     .profile-row-label{font-size:14px;color:var(--text);}
-    .profile-row-val{font-size:13px;color:var(--gray);}
-    .profile-row-arrow{font-size:14px;color:var(--gray);}
-    .edit-field-wrap{padding:0 20px;display:flex;flex-direction:column;gap:12px;margin-top:8px;}
+    .profile-row-val{font-size:13px;color:var(--gray);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .edit-area{margin:8px 20px 0;background:#f9f9f9;border-radius:14px;padding:16px;border:0.5px solid #eee;display:none;flex-direction:column;gap:10px;}
+    .edit-area.open{display:flex;}
     .signout-big{margin:20px;background:none;border:0.5px solid #E24B4A;border-radius:14px;padding:13px;width:calc(100% - 40px);font-size:14px;font-weight:600;color:#E24B4A;cursor:pointer;font-family:inherit;}
   </style>
 </head>
@@ -149,7 +149,7 @@
 <div id="s-signin" class="screen">
   <div class="auth-wrap">
     <div class="auth-logo">what now?</div>
-    <div class="auth-sub">sign in to your account</div>
+    <div class="auth-sub">welcome back</div>
     <input class="auth-inp" id="si-email" type="email" placeholder="email" autocomplete="email"/>
     <input class="auth-inp" id="si-pass" type="password" placeholder="password" autocomplete="current-password"/>
     <div class="auth-err" id="si-err"></div>
@@ -164,12 +164,14 @@
 <div id="s-signup" class="screen">
   <div class="auth-wrap">
     <div class="auth-logo">what now?</div>
-    <div class="auth-sub">create your account. your username is how friends find and invite you to groups.</div>
+    <div class="auth-sub">first, pick a username. this is how friends will find and invite you to groups.</div>
+
     <div class="username-wrap">
       <span class="username-prefix">@</span>
-      <input class="username-inp" id="su-username" placeholder="pick a username" autocomplete="off" oninput="checkUsername()"/>
+      <input class="username-inp" id="su-username" placeholder="username" autocomplete="off" oninput="checkUsername(this.value)"/>
     </div>
     <div class="username-status" id="username-status"></div>
+
     <input class="auth-inp" id="su-email" type="email" placeholder="email" autocomplete="email"/>
     <input class="auth-inp" id="su-pass" type="password" placeholder="password (min 6 chars)" autocomplete="new-password"/>
     <div class="auth-err" id="su-err"></div>
@@ -207,7 +209,7 @@
 
 <!-- HOME -->
 <div id="s-home" class="screen">
-  <div class="topbar"><h1>what now?</h1><p>hey, what do you feel like doing?</p></div>
+  <div class="topbar"><h1>what now?</h1><p id="home-greeting">hey, what do you feel like doing?</p></div>
   <div id="nudge-wrap"></div>
   <button class="what-now-btn" onclick="goSuggest()">
     <div class="wn-label">what now?</div>
@@ -328,7 +330,7 @@
     </div>
     <div class="auth-err" id="group-err"></div>
     <button class="add-btn" style="padding:13px;border-radius:12px;width:100%;" onclick="createGroup()">create group</button>
-    <p style="font-size:12px;color:var(--gray);text-align:center;line-height:1.5;">usernames are case-sensitive. friends will see the group automatically when they open the app.</p>
+    <p style="font-size:12px;color:var(--gray);text-align:center;line-height:1.5;">usernames are case-sensitive. friends will see the group when they open the app.</p>
   </div>
 </div>
 
@@ -363,40 +365,53 @@
 <!-- PROFILE -->
 <div id="s-profile" class="screen">
   <div class="topbar"><h1>profile</h1></div>
-  <div style="padding:0 20px 16px;display:flex;flex-direction:column;align-items:center;">
-    <div class="profile-avatar" id="profile-avatar"></div>
+
+  <div style="padding:0 20px 20px;display:flex;flex-direction:column;align-items:center;">
+    <div class="profile-avatar" id="profile-avatar">??</div>
     <div class="profile-username" id="profile-username-display"></div>
-    <div class="profile-email" id="profile-email-display"></div>
+    <div class="profile-email-text" id="profile-email-display"></div>
   </div>
 
-  <div class="section-label">account</div>
+  <div class="section-label">account settings</div>
   <div class="profile-section">
-    <div class="profile-row" onclick="showEditField('username')">
+    <div class="profile-row" onclick="openEditField('username')">
       <span class="profile-row-label">username</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-username"></span><span class="profile-row-arrow">›</span></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="profile-row-val" id="pr-username-val"></span>
+        <span style="color:var(--gray);font-size:18px;">›</span>
+      </div>
     </div>
-    <div class="profile-row" onclick="showEditField('email')">
+    <div class="profile-row" onclick="openEditField('email')">
       <span class="profile-row-label">email</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-email"></span><span class="profile-row-arrow">›</span></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="profile-row-val" id="pr-email-val"></span>
+        <span style="color:var(--gray);font-size:18px;">›</span>
+      </div>
     </div>
-    <div class="profile-row" onclick="showEditField('password')">
+    <div class="profile-row" onclick="openEditField('password')">
       <span class="profile-row-label">password</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">••••••••</span><span class="profile-row-arrow">›</span></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="profile-row-val">••••••••</span>
+        <span style="color:var(--gray);font-size:18px;">›</span>
+      </div>
     </div>
   </div>
 
-  <div id="edit-field-area" style="display:none;margin-top:8px;">
-    <div class="profile-section" style="margin:0 20px;">
-      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
-        <div class="form-label" id="edit-field-label"></div>
-        <input class="add-inp" id="edit-field-inp" autocomplete="off"/>
-        <div class="auth-err" id="edit-err"></div>
-        <div class="auth-ok" id="edit-ok"></div>
-        <div style="display:flex;gap:8px;">
-          <button class="detail-btn" onclick="hideEditField()">cancel</button>
-          <button class="detail-btn detail-btn-p" onclick="saveEditField()">save</button>
-        </div>
+  <div class="edit-area" id="edit-area">
+    <div class="form-label" id="edit-label"></div>
+    <div id="edit-username-wrap" style="display:none;">
+      <div class="username-wrap">
+        <span class="username-prefix">@</span>
+        <input class="username-inp" id="edit-username-inp" autocomplete="off" oninput="checkEditUsername(this.value)"/>
       </div>
+      <div class="username-status" id="edit-username-status" style="margin-top:6px;"></div>
+    </div>
+    <input class="add-inp" id="edit-generic-inp" style="display:none;" autocomplete="off"/>
+    <div class="auth-err" id="edit-err"></div>
+    <div class="auth-ok" id="edit-ok"></div>
+    <div style="display:flex;gap:8px;">
+      <button class="detail-btn" onclick="closeEditField()">cancel</button>
+      <button class="detail-btn detail-btn-p" onclick="saveEditField()">save</button>
     </div>
   </div>
 
@@ -424,7 +439,7 @@ const nudges=["it's friday... what now? 👀","you haven't done anything from yo
 const oneLiners=["look at you go.","knew you had it in you.","look at you being a person.","not bad. not bad at all.","proud of you honestly."];
 const tagMap={'bowling with friends':'group','try a new restaurant':'group','movie night':'group','explore a new part of town':'outside','game night':'group','start reading a book':'solo','deep clean my room':'productive','go to the gym':'productive','meal prep for the week':'productive','take a photography walk':'outside',"cook a recipe i've never tried":'productive','watch a documentary':'solo'};
 
-let currentUser=null,currentUsername='',ideas=[],somedays=[],groups=[],currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentEnergy='medium',skipCount=0,doneSugText='',unsubIdeas=null,unsubSomedays=null,unsubGroups=null,usernameTimer=null,editFieldType='';
+let currentUser=null,currentUsername='',ideas=[],somedays=[],groups=[],currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentEnergy='medium',skipCount=0,doneSugText='',unsubIdeas=null,unsubSomedays=null,unsubGroups=null,usernameCheckTimer=null,editUsernameCheckTimer=null,editFieldType='';
 
 function daysSince(ts){if(!ts)return 0;const d=ts.toDate?ts.toDate():new Date(ts);return Math.floor((Date.now()-d)/864e5);}
 function ageText(ts){const n=daysSince(ts);if(n===0)return'just added';if(n===1)return'added yesterday';if(n<7)return`added ${n} days ago`;if(n<14)return'added 1 week ago';if(n<30)return`added ${Math.floor(n/7)} weeks ago`;return`added ${Math.floor(n/30)} month${Math.floor(n/30)>1?'s':''} ago`;}
@@ -432,6 +447,7 @@ function isOld(ts){return daysSince(ts)>14;}
 function tagClass(t){return t==='solo'?'tag-solo':t==='group'?'tag-group':t==='productive'||t==='outside'||t==='free'?'tag-prod':'tag-someday';}
 function dotColor(t){return t==='group'?TEAL:t==='productive'||t==='outside'?AMBER:CORAL;}
 function $(id){return document.getElementById(id);}
+function isValidUsername(u){return /^[a-zA-Z0-9_]{3,}$/.test(u);}
 
 const allTabs=['home','groups','someday','profile'];
 const noNavScreens=['s-signin','s-signup','s-onboard','s-suggest','s-done','s-detail','s-groupdetail','s-creategroup'];
@@ -480,7 +496,7 @@ function setupListeners(){
   unsubGroups=onSnapshot(query(collection(db,'groups'),where('members','array-contains',uid)),snap=>{groups=snap.docs.map(d=>({id:d.id,...d.data()}));renderGroups();});
 }
 
-function friendlyError(code){return({'auth/user-not-found':'no account with that email','auth/wrong-password':'wrong password','auth/invalid-credential':'wrong email or password','auth/email-already-in-use':'an account already exists with that email','auth/invalid-email':'invalid email address','auth/too-many-requests':'too many attempts, try again later','auth/weak-password':'password must be at least 6 characters','auth/requires-recent-login':'please sign out and sign back in before changing this'})[code]||'something went wrong, try again';}
+function friendlyError(code){return({'auth/user-not-found':'no account with that email','auth/wrong-password':'wrong password','auth/invalid-credential':'wrong email or password','auth/email-already-in-use':'an account already exists with that email','auth/invalid-email':'invalid email address','auth/too-many-requests':'too many attempts, try again later','auth/weak-password':'password must be at least 6 characters','auth/requires-recent-login':'please sign out and sign back in to change this'})[code]||'something went wrong, try again';}
 
 async function signIn(){
   $('si-err').textContent='';$('si-ok').textContent='';
@@ -494,31 +510,31 @@ async function signUp(){
   const email=$('su-email').value.trim();
   const pass=$('su-pass').value;
   $('su-err').textContent='';
-  if(!username){$('su-err').textContent='pick a username';return;}
-  if(!/^[a-zA-Z0-9_]+$/.test(username)){$('su-err').textContent='letters, numbers, and underscores only';return;}
-  if(username.length<3){$('su-err').textContent='username must be at least 3 characters';return;}
-  const taken=await getDocs(query(collection(db,'users'),where('username','==',username)));
-  if(!taken.empty){$('su-err').textContent='that username is taken';return;}
+  if(!username){$('su-err').textContent='pick a username first';return;}
+  if(!isValidUsername(username)){$('su-err').textContent='username: letters, numbers, underscores only, min 3 chars';return;}
+  if(!email){$('su-err').textContent='enter your email';return;}
   if(pass.length<6){$('su-err').textContent='password must be at least 6 characters';return;}
+  const taken=await getDocs(query(collection(db,'users'),where('username','==',username)));
+  if(!taken.empty){$('su-err').textContent='that username is taken — try another';return;}
   try{
     const cred=await createUserWithEmailAndPassword(auth,email,pass);
     await setDoc(doc(db,'users',cred.user.uid),{email,username,onboarded:false,createdAt:serverTimestamp()});
     await setDoc(doc(db,'usernames',username),{uid:cred.user.uid});
+    currentUsername=username;
   }catch(e){$('su-err').textContent=friendlyError(e.code);}
 }
 window.signUp=signUp;
 
-async function checkUsername(){
-  const val=$('su-username').value.trim();
+function checkUsername(val){
   const status=$('username-status');
   if(!val){status.textContent='';return;}
-  if(!/^[a-zA-Z0-9_]+$/.test(val)){status.style.color='#E24B4A';status.textContent='letters, numbers, and underscores only';return;}
-  if(val.length<3){status.style.color='#E24B4A';status.textContent='at least 3 characters';return;}
-  clearTimeout(usernameTimer);
-  usernameTimer=setTimeout(async()=>{
+  if(!isValidUsername(val)){status.style.color='#E24B4A';status.textContent='letters, numbers, underscores only (min 3)';return;}
+  status.style.color=GRAY;status.textContent='checking...';
+  clearTimeout(usernameCheckTimer);
+  usernameCheckTimer=setTimeout(async()=>{
     const snap=await getDocs(query(collection(db,'users'),where('username','==',val)));
-    if(snap.empty){status.style.color='#1D9E75';status.textContent='✓ available';}
-    else{status.style.color='#E24B4A';status.textContent='taken';}
+    if(snap.empty){status.style.color=TEAL;status.textContent='✓ available';}
+    else{status.style.color='#E24B4A';status.textContent='taken — try another';}
   },500);
 }
 window.checkUsername=checkUsername;
@@ -548,10 +564,12 @@ window.toggleOnboard=toggleOnboard;
 async function finishOnboard(){
   const selected=document.querySelectorAll('.onboard-opt.on');
   const batch=[];
-  selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,type:tag==='group'?'group':'solo',tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false}));});
+  selected.forEach(el=>{
+    const text=el.querySelector('.onboard-opt-text').textContent;
+    const tag=tagMap[text]||'solo';
+    batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,type:tag==='group'?'group':'solo',tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false}));
+  });
   await Promise.all(batch);
-  const profile=await getDoc(doc(db,'users',currentUser.uid));
-  currentUsername=profile.data().username||'';
   await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true});
   setupListeners();$('main-nav').style.display='flex';goTo('s-home');
 }
@@ -563,34 +581,59 @@ function renderProfile(){
   $('profile-avatar').textContent=initials;
   $('profile-username-display').textContent=`@${currentUsername}`;
   $('profile-email-display').textContent=currentUser.email;
-  $('pr-username').textContent=`@${currentUsername}`;
-  $('pr-email').textContent=currentUser.email;
-  hideEditField();
+  $('pr-username-val').textContent=`@${currentUsername}`;
+  $('pr-email-val').textContent=currentUser.email;
+  closeEditField();
 }
 
-function showEditField(type){
+function openEditField(type){
   editFieldType=type;
-  const inp=$('edit-field-inp');
   $('edit-err').textContent='';$('edit-ok').textContent='';
-  if(type==='username'){$('edit-field-label').textContent='new username';inp.value=currentUsername;inp.type='text';inp.placeholder='new username';}
-  else if(type==='email'){$('edit-field-label').textContent='new email';inp.value=currentUser.email;inp.type='email';inp.placeholder='new email';}
-  else if(type==='password'){$('edit-field-label').textContent='new password';inp.value='';inp.type='password';inp.placeholder='new password (min 6 chars)';}
-  $('edit-field-area').style.display='block';
-  inp.focus();
+  $('edit-username-wrap').style.display='none';
+  $('edit-generic-inp').style.display='none';
+  if(type==='username'){
+    $('edit-label').textContent='new username';
+    $('edit-username-wrap').style.display='block';
+    $('edit-username-inp').value=currentUsername;
+    $('edit-username-status').textContent='';
+    setTimeout(()=>$('edit-username-inp').focus(),100);
+  } else if(type==='email'){
+    $('edit-label').textContent='new email';
+    const inp=$('edit-generic-inp');inp.type='email';inp.placeholder='new email';inp.value=currentUser.email;inp.style.display='block';
+    setTimeout(()=>inp.focus(),100);
+  } else if(type==='password'){
+    $('edit-label').textContent='new password';
+    const inp=$('edit-generic-inp');inp.type='password';inp.placeholder='new password (min 6 chars)';inp.value='';inp.style.display='block';
+    setTimeout(()=>inp.focus(),100);
+  }
+  $('edit-area').classList.add('open');
 }
-window.showEditField=showEditField;
+window.openEditField=openEditField;
 
-function hideEditField(){$('edit-field-area').style.display='none';}
-window.hideEditField=hideEditField;
+function closeEditField(){$('edit-area').classList.remove('open');}
+window.closeEditField=closeEditField;
+
+function checkEditUsername(val){
+  const status=$('edit-username-status');
+  if(!val||val===currentUsername){status.textContent='';return;}
+  if(!isValidUsername(val)){status.style.color='#E24B4A';status.textContent='letters, numbers, underscores only (min 3)';return;}
+  status.style.color=GRAY;status.textContent='checking...';
+  clearTimeout(editUsernameCheckTimer);
+  editUsernameCheckTimer=setTimeout(async()=>{
+    const snap=await getDocs(query(collection(db,'users'),where('username','==',val)));
+    if(snap.empty){status.style.color=TEAL;status.textContent='✓ available';}
+    else{status.style.color='#E24B4A';status.textContent='taken — try another';}
+  },500);
+}
+window.checkEditUsername=checkEditUsername;
 
 async function saveEditField(){
-  const val=$('edit-field-inp').value.trim();
   $('edit-err').textContent='';$('edit-ok').textContent='';
-  if(!val){$('edit-err').textContent='field cannot be empty';return;}
   try{
     if(editFieldType==='username'){
-      if(!/^[a-zA-Z0-9_]+$/.test(val)){$('edit-err').textContent='letters, numbers, and underscores only';return;}
-      if(val.length<3){$('edit-err').textContent='at least 3 characters';return;}
+      const val=$('edit-username-inp').value.trim();
+      if(!val){$('edit-err').textContent='username cannot be empty';return;}
+      if(!isValidUsername(val)){$('edit-err').textContent='letters, numbers, underscores only (min 3)';return;}
       if(val===currentUsername){$('edit-err').textContent='that\'s already your username';return;}
       const taken=await getDocs(query(collection(db,'users'),where('username','==',val)));
       if(!taken.empty){$('edit-err').textContent='that username is taken';return;}
@@ -599,16 +642,21 @@ async function saveEditField(){
       await updateDoc(doc(db,'users',currentUser.uid),{username:val});
       currentUsername=val;
       $('edit-ok').textContent='username updated!';
+      setTimeout(()=>renderProfile(),1200);
     } else if(editFieldType==='email'){
+      const val=$('edit-generic-inp').value.trim();
+      if(!val){$('edit-err').textContent='email cannot be empty';return;}
       await updateEmail(auth.currentUser,val);
       await updateDoc(doc(db,'users',currentUser.uid),{email:val});
       $('edit-ok').textContent='email updated!';
+      setTimeout(()=>renderProfile(),1200);
     } else if(editFieldType==='password'){
-      if(val.length<6){$('edit-err').textContent='at least 6 characters';return;}
+      const val=$('edit-generic-inp').value;
+      if(val.length<6){$('edit-err').textContent='password must be at least 6 characters';return;}
       await updatePassword(auth.currentUser,val);
       $('edit-ok').textContent='password updated!';
+      setTimeout(()=>closeEditField(),1200);
     }
-    renderProfile();
   }catch(e){$('edit-err').textContent=friendlyError(e.code);}
 }
 window.saveEditField=saveEditField;
@@ -618,54 +666,136 @@ function renderIdeas(){
   const active=ideas.filter(i=>currentFilter==='anything'||i.tag===currentFilter||i.type===currentFilter);
   if(!active.length){el.innerHTML='<div class="empty">your list is empty!<br>add some ideas below.</div>';return;}
   el.innerHTML='';
-  active.forEach(idea=>{const row=document.createElement('div');row.className='idea-row';const old=isOld(idea.dateAdded)?' · been a while!':'';row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag)}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div><div class="idea-age">${ageText(idea.dateAdded)}${old}</div></div><span class="idea-tag ${tagClass(idea.tag)}">${idea.tag}</span>`;row.onclick=()=>openDetail(idea.id);el.appendChild(row);});
+  active.forEach(idea=>{
+    const row=document.createElement('div');row.className='idea-row';
+    const old=isOld(idea.dateAdded)?' · been a while!':'';
+    row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag)}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div><div class="idea-age">${ageText(idea.dateAdded)}${old}</div></div><span class="idea-tag ${tagClass(idea.tag)}">${idea.tag}</span>`;
+    row.onclick=()=>openDetail(idea.id);el.appendChild(row);
+  });
 }
 
 function renderGroups(){
   const el=$('group-list');if(!el)return;el.innerHTML='';
   if(!groups.length){el.innerHTML='<div class="empty">no groups yet.<br>create one and add your friends!</div>';return;}
-  groups.forEach(g=>{const card=document.createElement('div');card.className='group-card';const avs=(g.usernames||[]).slice(0,4).map(u=>`<div class="avatar">${u.slice(0,2)}</div>`).join('');card.innerHTML=`<div class="group-name">${g.name}</div><div class="group-meta">${(g.members||[]).length} members · ${(g.ideas||[]).length} ideas</div><div class="avatar-row">${avs}</div>`;card.onclick=()=>openGroup(g.id);el.appendChild(card);});
+  groups.forEach(g=>{
+    const card=document.createElement('div');card.className='group-card';
+    const avs=(g.usernames||[]).slice(0,4).map(u=>`<div class="avatar">${u.slice(0,2).toUpperCase()}</div>`).join('');
+    card.innerHTML=`<div class="group-name">${g.name}</div><div class="group-meta">${(g.members||[]).length} members · ${(g.ideas||[]).length} ideas</div><div class="avatar-row">${avs}</div>`;
+    card.onclick=()=>openGroup(g.id);el.appendChild(card);
+  });
 }
 
 function renderSomeday(){
   const el=$('someday-list');if(!el)return;el.innerHTML='';
   if(!somedays.length){el.innerHTML='<div class="empty">no intentions yet.<br>add something you\'ve been meaning to do.</div>';return;}
-  somedays.forEach(s=>{const row=document.createElement('div');row.className='idea-row';row.innerHTML=`<div class="idea-dot" style="background:${GRAY}"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note||'someday intention'}</div></div><span class="idea-tag tag-someday">someday</span>`;row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){updateDoc(doc(db,'ideas',s.id),{isSomeday:false,note:null});}};el.appendChild(row);});
+  somedays.forEach(s=>{
+    const row=document.createElement('div');row.className='idea-row';
+    row.innerHTML=`<div class="idea-dot" style="background:${GRAY}"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note||'someday intention'}</div></div><span class="idea-tag tag-someday">someday</span>`;
+    row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){updateDoc(doc(db,'ideas',s.id),{isSomeday:false,note:null});}};
+    el.appendChild(row);
+  });
 }
 
 function renderGroupDetail(gid){
   const g=groups.find(x=>x.id===gid);if(!g)return;
   $('gd-name').textContent=g.name;$('gd-meta').textContent=`${(g.members||[]).length} members`;
   const el=$('group-idea-list');el.innerHTML='';
-  (g.ideas||[]).forEach(idea=>{const row=document.createElement('div');row.className='idea-row';row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag||'group')}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div></div><span class="idea-tag ${tagClass(idea.tag||'group')}">${idea.tag||'group'}</span>`;el.appendChild(row);});
+  (g.ideas||[]).forEach(idea=>{
+    const row=document.createElement('div');row.className='idea-row';
+    row.innerHTML=`<div class="idea-dot" style="background:${dotColor(idea.tag||'group')}"></div><div class="idea-info"><div class="idea-text">${idea.text}</div></div><span class="idea-tag ${tagClass(idea.tag||'group')}">${idea.tag||'group'}</span>`;
+    el.appendChild(row);
+  });
   const membersEl=$('group-members');membersEl.innerHTML='';
-  (g.usernames||[]).forEach(u=>{const row=document.createElement('div');row.className='member-row';row.innerHTML=`<div class="avatar" style="margin-right:8px;">${u.slice(0,2)}</div><span>@${u}</span>`;membersEl.appendChild(row);});
+  (g.usernames||[]).forEach(u=>{
+    const row=document.createElement('div');row.className='member-row';
+    row.innerHTML=`<div class="avatar" style="margin-right:8px;">${u.slice(0,2).toUpperCase()}</div><span>@${u}</span>`;
+    membersEl.appendChild(row);
+  });
 }
 
-function getPool(){let pool=[...ideas];if(currentEnergy==='low'){const l=pool.filter(i=>i.tag==='solo'||i.tag==='productive');if(l.length)pool=l;}if(currentEnergy==='high'){const h=pool.filter(i=>i.tag==='group'||i.tag==='outside');if(h.length)pool=h;}return pool;}
-function showSug(idea){if(!idea)return;$('sug-eye').textContent=idea.tag==='group'?'group hangout':idea.tag==='productive'?'productive task':'solo activity';$('sug-title').textContent=idea.text;$('sug-meta').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=idea.id;}
+function getPool(){
+  let pool=[...ideas];
+  if(currentEnergy==='low'){const l=pool.filter(i=>i.tag==='solo'||i.tag==='productive');if(l.length)pool=l;}
+  if(currentEnergy==='high'){const h=pool.filter(i=>i.tag==='group'||i.tag==='outside');if(h.length)pool=h;}
+  return pool;
+}
 
-function goSuggest(){const pool=getPool();if(!pool.length){alert('add some ideas to your list first!');return;}currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');}
+function showSug(idea){
+  if(!idea)return;
+  $('sug-eye').textContent=idea.tag==='group'?'group hangout':idea.tag==='productive'?'productive task':'solo activity';
+  $('sug-title').textContent=idea.text;
+  $('sug-meta').textContent=ageText(idea.dateAdded)+(isOld(idea.dateAdded)?' · been a while!':'');
+  $('skip-q').style.display='none';
+  doneSugText=idea.text;currentDetailId=idea.id;
+}
+
+function goSuggest(){
+  const pool=getPool();if(!pool.length){alert('add some ideas to your list first!');return;}
+  currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');
+}
 window.goSuggest=goSuggest;
-function goSuggestGroup(){const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];$('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;goTo('s-suggest');}
+
+function goSuggestGroup(){
+  const g=groups.find(x=>x.id===currentGroupId);
+  if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}
+  const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];
+  $('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;
+  $('sug-meta').textContent='from group list';$('skip-q').style.display='none';
+  doneSugText=idea.text;currentDetailId=null;goTo('s-suggest');
+}
 window.goSuggestGroup=goSuggestGroup;
+
 function nextSug(){const pool=getPool();if(!pool.length)return;currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);}
 window.nextSug=nextSug;
-function skipIdea(){skipCount++;if(currentDetailId){const idea=ideas.find(i=>i.id===currentDetailId);updateDoc(doc(db,'ideas',currentDetailId),{skipCount:(idea?.skipCount||0)+1});}if(skipCount>=2)$('skip-q').style.display='block';nextSug();}
+
+function skipIdea(){
+  skipCount++;
+  if(currentDetailId){const idea=ideas.find(i=>i.id===currentDetailId);updateDoc(doc(db,'ideas',currentDetailId),{skipCount:(idea?.skipCount||0)+1});}
+  if(skipCount>=2)$('skip-q').style.display='block';
+  nextSug();
+}
 window.skipIdea=skipIdea;
-async function doIt(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});$('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];$('done-sub').textContent=`"${doneSugText}" marked as done.`;goTo('s-done');}
+
+async function doIt(){
+  if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});
+  $('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];
+  $('done-sub').textContent=`"${doneSugText}" marked as done.`;
+  goTo('s-done');
+}
 window.doIt=doIt;
-async function moveToSomeday(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isSomeday:true,note:'moved from main list'});goTo('s-home');}
+
+async function moveToSomeday(){
+  if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isSomeday:true,note:'moved from main list'});
+  goTo('s-home');
+}
 window.moveToSomeday=moveToSomeday;
+
 function energyPick(el,e){document.querySelectorAll('.energy-opt').forEach(x=>x.classList.remove('on'));el.classList.add('on');currentEnergy=e;nextSug();}
 window.energyPick=energyPick;
+
 function filterPill(el,f){document.querySelectorAll('.filter-row .pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');currentFilter=f;renderIdeas();}
 window.filterPill=filterPill;
-async function addIdea(){const inp=$('new-idea');const val=inp.value.trim();if(!val)return;await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,type:'solo',tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});inp.value='';}
+
+async function addIdea(){
+  const inp=$('new-idea');const val=inp.value.trim();if(!val)return;
+  await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,type:'solo',tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});
+  inp.value='';
+}
 window.addIdea=addIdea;
-async function addSomeday(){const inp=$('someday-inp');const val=inp.value.trim();if(!val)return;await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,type:'solo',tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:true,note:'just added'});inp.value='';}
+
+async function addSomeday(){
+  const inp=$('someday-inp');const val=inp.value.trim();if(!val)return;
+  await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,type:'solo',tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:true,note:'just added'});
+  inp.value='';
+}
 window.addSomeday=addSomeday;
-async function addGroupIdea(){const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;const g=groups.find(x=>x.id===currentGroupId);if(!g)return;await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:'group'}]});inp.value='';}
+
+async function addGroupIdea(){
+  const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;
+  const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
+  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:'group'}]});
+  inp.value='';
+}
 window.addGroupIdea=addGroupIdea;
 
 function openDetail(id){
@@ -681,33 +811,58 @@ function openDetail(id){
   const tog=$('priv-toggle');tog.classList.toggle('on',!!idea.isPrivate);tog.querySelector('.toggle-knob').style.left=idea.isPrivate?'20px':'2px';
   goTo('s-detail');
 }
-async function saveDetail(){if(!currentDetailId)return;await updateDoc(doc(db,'ideas',currentDetailId),{reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});goTo('s-home');}
+
+async function saveDetail(){
+  if(!currentDetailId)return;
+  await updateDoc(doc(db,'ideas',currentDetailId),{reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});
+  goTo('s-home');
+}
 window.saveDetail=saveDetail;
-async function detailDone(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});$('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];$('done-sub').textContent=`"${doneSugText}" marked as done.`;goTo('s-done');}
+
+async function detailDone(){
+  if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});
+  $('done-title').textContent=oneLiners[Math.floor(Math.random()*oneLiners.length)];
+  $('done-sub').textContent=`"${doneSugText}" marked as done.`;
+  goTo('s-done');
+}
 window.detailDone=detailDone;
-async function detailToSomeday(){if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isSomeday:true,note:'moved from main list'});goTo('s-home');}
+
+async function detailToSomeday(){
+  if(currentDetailId)await updateDoc(doc(db,'ideas',currentDetailId),{isSomeday:true,note:'moved from main list'});
+  goTo('s-home');
+}
 window.detailToSomeday=detailToSomeday;
-async function removeIdea(){if(confirm('remove this idea?')){await deleteDoc(doc(db,'ideas',currentDetailId));goTo('s-home');}}
+
+async function removeIdea(){
+  if(confirm('remove this idea?')){await deleteDoc(doc(db,'ideas',currentDetailId));goTo('s-home');}
+}
 window.removeIdea=removeIdea;
+
 function openGroup(id){currentGroupId=id;renderGroupDetail(id);goTo('s-groupdetail');}
 window.openGroup=openGroup;
 
 async function createGroup(){
-  const name=$('new-group-name').value.trim();if(!name){$('group-err').textContent='give your group a name';return;}
+  const name=$('new-group-name').value.trim();
+  if(!name){$('group-err').textContent='give your group a name';return;}
   const invites=[$('inv-1'),$('inv-2'),$('inv-3')].map(el=>el.value.trim()).filter(Boolean);
   const invitedUids=[],invitedUsernames=[];
   for(const username of invites){
     const snap=await getDocs(query(collection(db,'users'),where('username','==',username)));
-    if(snap.empty){$('group-err').textContent=`couldn't find @${username} — check the username and try again`;return;}
+    if(snap.empty){$('group-err').textContent=`couldn't find @${username} — check the spelling and try again`;return;}
     invitedUids.push(snap.docs[0].id);invitedUsernames.push(username);
   }
   await addDoc(collection(db,'groups'),{name:name.toLowerCase(),members:[currentUser.uid,...invitedUids],usernames:[currentUsername,...invitedUsernames],ideas:[],createdBy:currentUser.uid,createdAt:serverTimestamp()});
   [$('new-group-name'),$('inv-1'),$('inv-2'),$('inv-3')].forEach(el=>el.value='');
-  $('group-err').textContent='';goTo('s-groups');
+  $('group-err').textContent='';
+  goTo('s-groups');
 }
 window.createGroup=createGroup;
 
-function showNudge(){const el=$('nudge-wrap');if(Math.random()<0.3)el.innerHTML=`<div class="nudge">${nudges[Math.floor(Math.random()*nudges.length)]}</div>`;else el.innerHTML='';}
+function showNudge(){
+  const el=$('nudge-wrap');
+  if(Math.random()<0.3)el.innerHTML=`<div class="nudge">${nudges[Math.floor(Math.random()*nudges.length)]}</div>`;
+  else el.innerHTML='';
+}
 </script>
 </body>
 </html>
