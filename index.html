@@ -502,7 +502,7 @@ const tagMap={'bowling with friends':'group','try a new restaurant':'group','mov
 const tagColors={solo:CORAL,group:TEAL,productive:AMBER,outside:GREEN,free:GRAY};
 const tagClasses={solo:'tag-solo',group:'tag-group',productive:'tag-productive',outside:'tag-outside',free:'tag-free'};
 
-let currentUser=null,currentUsername='',ideas=[],somedays=[],groups=[],currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentEnergy='medium',skipCount=0,doneSugText='',doneSugRecurring=true,unsubIdeas=null,unsubSomedays=null,unsubGroups=null,usernameCheckTimer=null,editUsernameCheckTimer=null,editFieldType='',selectedType='solo';
+let currentUser=null,currentUsername='',ideas=[],somedays=[],groups=[],currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentEnergy='medium',skipCount=0,doneSugText='',doneSugRecurring=true,isGroupSuggest=false,unsubIdeas=null,unsubSomedays=null,unsubGroups=null,usernameCheckTimer=null,editUsernameCheckTimer=null,editFieldType='',selectedType='solo';
 
 function daysSince(ts){if(!ts)return 0;const d=ts.toDate?ts.toDate():new Date(ts);return Math.floor((Date.now()-d)/864e5);}
 function ageText(ts){const n=daysSince(ts);if(n===0)return'just added';if(n===1)return'added yesterday';if(n<7)return`added ${n} days ago`;if(n<14)return'added 1 week ago';if(n<30)return`added ${Math.floor(n/7)} weeks ago`;return`added ${Math.floor(n/30)} month${Math.floor(n/30)>1?'s':''} ago`;}
@@ -741,15 +741,14 @@ function showSug(idea){
   doneSugText=idea.text;currentDetailId=idea.id;doneSugRecurring=idea.recurring!==false;
 }
 
-function goSuggest(){const pool=getPool();if(!pool.length){alert('add some ideas to your list first!');return;}currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');}
+function goSuggest(){isGroupSuggest=false;const pool=getPool();if(!pool.length){alert('add some ideas to your list first!');return;}currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');}
 window.goSuggest=goSuggest;
 
-// GROUP SUGGEST — only from group's own list
 function goSuggestGroup(){
   const g=groups.find(x=>x.id===currentGroupId);
   if(!g||!g.ideas||!g.ideas.length){alert('add some ideas to the group list first!');return;}
+  isGroupSuggest=true;
   const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];
-  const labels={solo:'solo activity',group:'group hangout',productive:'productive task',outside:'get outside',free:'free & easy'};
   $('sug-eye').textContent='group hangout';
   $('sug-title').textContent=idea.text;
   $('sug-meta').textContent='from group list';
@@ -759,7 +758,20 @@ function goSuggestGroup(){
 }
 window.goSuggestGroup=goSuggestGroup;
 
-function nextSug(){const pool=getPool();if(!pool.length)return;currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);}
+function nextSug(){
+  if(isGroupSuggest){
+    const g=groups.find(x=>x.id===currentGroupId);
+    if(!g||!g.ideas||!g.ideas.length)return;
+    const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];
+    $('sug-eye').textContent='group hangout';
+    $('sug-title').textContent=idea.text;
+    $('sug-meta').textContent='from group list';
+    $('skip-q').style.display='none';
+    doneSugText=idea.text;currentDetailId=null;
+    return;
+  }
+  const pool=getPool();if(!pool.length)return;currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
+}
 window.nextSug=nextSug;
 
 function skipIdea(){
