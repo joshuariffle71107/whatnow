@@ -743,6 +743,8 @@ function celebrate(text){
   setTimeout(()=>{toast.classList.remove('show');toast.classList.add('hide');setTimeout(()=>{cel.querySelectorAll('.confetti-piece').forEach(p=>p.remove());toast.classList.remove('hide');},400);},2200);
 }
 
+initDarkMode();
+
 onAuthStateChanged(auth,async user=>{
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
@@ -983,7 +985,7 @@ function updateDarkModeVal(){
   const isLight=document.body.classList.contains('light-mode');
   el.textContent=isDark?'on':isLight?'off (overriding system)':'auto';
 }
-initDarkMode();
+// initDarkMode called after DOM ready
 
 // ── SEARCH ────────────────────────────────────────────────────────────────
 let searchQuery='';
