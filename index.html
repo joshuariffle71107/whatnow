@@ -793,12 +793,36 @@ function renderSomeday(){
   somedays.forEach(s=>{const row=document.createElement('div');row.className='idea-row';const bar=document.createElement('div');bar.className='age-bar';bar.style.background=GRAY;row.appendChild(bar);row.innerHTML+=`<div class="idea-dot" style="background:${GRAY};margin-left:6px;"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note||'someday intention'}</div></div><span class="idea-tag tag-someday">someday</span>`;row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){updateDoc(doc(db,'ideas',s.id),{isSomeday:false,note:null});}};el.appendChild(row);});
 }
 
+function makeGroupSwipeRow(idea,gid){
+  const wrap=document.createElement('div');wrap.className='swipe-wrap';
+  const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';
+  del.onclick=async()=>{
+    if(!confirm(`remove "${idea.text}" from group?`))return;
+    const g=groups.find(x=>x.id===gid);if(!g)return;
+    await updateDoc(doc(db,'groups',gid),{ideas:(g.ideas||[]).filter(i=>i.id!==idea.id)});
+  };
+  const row=document.createElement('div');row.className='idea-row';
+  const bar=document.createElement('div');bar.className='age-bar';bar.style.background='var(--gray2)';row.appendChild(bar);
+  const dot=document.createElement('div');dot.className='idea-dot';dot.style.background=tagColors[idea.tag]||TEAL;dot.style.marginLeft='6px';row.appendChild(dot);
+  const info=document.createElement('div');info.className='idea-info';
+  info.innerHTML=`<div class="idea-text">${idea.text}</div><div class="idea-age">${idea.addedBy?'added by @'+idea.addedBy:''}</div>`;
+  row.appendChild(info);
+  const tag=document.createElement('span');tag.className=`idea-tag ${tagClasses[idea.tag]||'tag-group'}`;tag.textContent=idea.tag||'group';row.appendChild(tag);
+  row.onclick=()=>openGroupIdeaDetail(idea.id,gid);
+  // swipe
+  let startX=0,currentX=0,swiping=false;
+  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;swiping=false;},{passive:true});
+  row.addEventListener('touchmove',e=>{currentX=e.touches[0].clientX;const dx=startX-currentX;if(dx>10)swiping=true;if(swiping){row.style.transform=`translateX(${Math.max(-72,Math.min(0,-dx))}px)`;del.style.opacity=Math.min(1,dx/72);}},{passive:true});
+  row.addEventListener('touchend',()=>{if(swiping){const dx=startX-currentX;if(dx>50){row.style.transform='translateX(-72px)';del.style.opacity='1';}else{row.style.transform='';del.style.opacity='0';}}swiping=false;});
+  wrap.appendChild(del);wrap.appendChild(row);return wrap;
+}
+
 function renderGroupDetail(gid){
   const g=groups.find(x=>x.id===gid);if(!g)return;
   $('gd-name').textContent=g.name;$('gd-meta').textContent=`${(g.members||[]).length} members`;
   const el=$('group-idea-list');el.innerHTML='';
   if(!g.ideas||!g.ideas.length){el.innerHTML='<div class="empty">no ideas yet.<br>add something for the group!</div>';}
-  else{(g.ideas||[]).forEach(idea=>{const row=document.createElement('div');row.className='idea-row';row.innerHTML=`<div class="age-bar" style="background:var(--gray2);"></div><div class="idea-dot" style="background:${TEAL};margin-left:6px;"></div><div class="idea-info"><div class="idea-text">${idea.text}</div></div><span class="idea-tag tag-group">${idea.tag||'group'}</span>`;row.onclick=()=>openGroupIdeaDetail(idea.id,gid);el.appendChild(row);});}
+  else{(g.ideas||[]).forEach(idea=>el.appendChild(makeGroupSwipeRow(idea,gid)));}
   const membersEl=$('group-members');membersEl.innerHTML='';
   (g.usernames||[]).forEach(u=>{const row=document.createElement('div');row.className='member-row';row.innerHTML=`<div class="avatar" style="margin-right:8px;">${u.slice(0,2).toUpperCase()}</div><span>@${u}</span>`;membersEl.appendChild(row);});
 }
@@ -873,7 +897,7 @@ window.addIdea=addIdea;
 async function addSomeday(){const inp=$('someday-inp');const val=inp.value.trim();if(!val)return;await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:true,note:'just added',recurring:false});inp.value='';}
 window.addSomeday=addSomeday;
 
-async function addGroupIdea(){const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;const g=groups.find(x=>x.id===currentGroupId);if(!g)return;await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:'group'}]});inp.value='';}
+async function addGroupIdea(){const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;const g=groups.find(x=>x.id===currentGroupId);if(!g)return;await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:'group',addedBy:currentUsername}]});inp.value='';}
 window.addGroupIdea=addGroupIdea;
 
 function openDetail(id){
