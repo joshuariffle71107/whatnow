@@ -686,9 +686,25 @@ function goTo(id){
 window.goTo=goTo;
 
 // BUTTON PRESS
-let btnPressTime=0;
-function btnDown(e){if(e)e.preventDefault();if(btnTransitioning)return;btnPressed=true;btnPressTime=Date.now();$('theBtn').classList.add('pressed');haptic('press');}
-function btnUp(e){if(e)e.preventDefault();if(!btnPressed||btnTransitioning)return;btnPressed=false;const held=Date.now()-btnPressTime;$('theBtn').classList.remove('pressed');if(held<60){$('theBtn').classList.remove('sprung');return;}$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
+let btnPressTime=0,btnTouchValid=false;
+function btnDown(e){
+  if(e)e.preventDefault();
+  if(btnTransitioning)return;
+  // Only activate if touch is in the inner 70% of the button (dead zone on edges)
+  if(e&&e.touches){
+    const t=e.touches[0];
+    const rect=$('theBtn').getBoundingClientRect();
+    const px=(t.clientX-rect.left)/rect.width;
+    const py=(t.clientY-rect.top)/rect.height;
+    btnTouchValid=(px>0.15&&px<0.85&&py>0.15&&py<0.85);
+  } else {
+    btnTouchValid=true;
+  }
+  if(!btnTouchValid)return;
+  btnPressed=true;btnPressTime=Date.now();
+  $('theBtn').classList.add('pressed');haptic('press');
+}
+function btnUp(e){if(e)e.preventDefault();if(!btnPressed||!btnTouchValid||btnTransitioning)return;btnPressed=false;const held=Date.now()-btnPressTime;$('theBtn').classList.remove('pressed');if(held<60){$('theBtn').classList.remove('sprung');return;}$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
 function btnCancel(){btnPressed=false;$('theBtn').classList.remove('pressed','sprung');}
 window.btnDown=btnDown;window.btnUp=btnUp;window.btnCancel=btnCancel;
 
