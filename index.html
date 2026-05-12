@@ -51,7 +51,7 @@
     /* THE BUTTON */
     .btn-section{padding:12px 20px 4px;position:relative;}
     .btn-shadow{background:var(--coral-dark);border-radius:20px;position:absolute;bottom:8px;left:20px;right:20px;top:12px;z-index:0;}
-    .the-btn{background:var(--coral);border-radius:20px;padding:22px 20px;width:100%;text-align:center;border:none;cursor:pointer;position:relative;z-index:1;transform:translateY(0px);transition:transform .1s ease,box-shadow .1s ease;box-shadow:0 4px 16px rgba(184,67,47,0.28);display:block;user-select:none;-webkit-user-select:none;overflow:hidden;}
+    .the-btn{background:var(--coral);border-radius:20px;padding:22px 28px;width:100%;text-align:center;border:none;cursor:pointer;position:relative;z-index:1;transform:translateY(0px);transition:transform .1s ease,box-shadow .1s ease;box-shadow:0 4px 16px rgba(184,67,47,0.28);display:block;user-select:none;-webkit-user-select:none;overflow:hidden;touch-action:manipulation;}
     .the-btn.pressed{transform:translateY(5px);box-shadow:0 1px 4px rgba(184,67,47,0.15);}
     .the-btn.sprung{transform:translateY(-3px);box-shadow:0 10px 28px rgba(184,67,47,0.5),0 4px 10px rgba(184,67,47,0.25);transition:transform .2s cubic-bezier(0.34,1.56,0.64,1),box-shadow .2s ease;}
     .btn-shimmer{position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.12) 50%,transparent 60%);background-size:200% 100%;animation:shimmer 3.5s infinite;pointer-events:none;}
@@ -98,7 +98,7 @@
 
     /* SWIPE ROW */
     .swipe-wrap{position:relative;border-radius:14px;overflow:hidden;}
-    .swipe-delete{position:absolute;right:0;top:0;bottom:0;background:#E24B4A;display:flex;align-items:center;justify-content:center;width:72px;border-radius:0 14px 14px 0;}
+    .swipe-delete{position:absolute;right:0;top:0;bottom:0;background:#E24B4A;display:flex;align-items:center;justify-content:center;width:72px;border-radius:0 14px 14px 0;opacity:0;transition:opacity .15s;}
     .swipe-delete-icon{color:#fff;font-size:18px;}
     .idea-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:var(--card);border:0.5px solid var(--gray3);cursor:pointer;transition:transform .12s,box-shadow .12s;position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none;}
     .idea-row:active{transform:scale(0.99);}
@@ -686,8 +686,9 @@ function goTo(id){
 window.goTo=goTo;
 
 // BUTTON PRESS
-function btnDown(e){if(e)e.preventDefault();if(btnTransitioning)return;btnPressed=true;$('theBtn').classList.add('pressed');haptic('press');}
-function btnUp(e){if(e)e.preventDefault();if(!btnPressed||btnTransitioning)return;btnPressed=false;$('theBtn').classList.remove('pressed');$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
+let btnPressTime=0;
+function btnDown(e){if(e)e.preventDefault();if(btnTransitioning)return;btnPressed=true;btnPressTime=Date.now();$('theBtn').classList.add('pressed');haptic('press');}
+function btnUp(e){if(e)e.preventDefault();if(!btnPressed||btnTransitioning)return;btnPressed=false;const held=Date.now()-btnPressTime;$('theBtn').classList.remove('pressed');if(held<60){$('theBtn').classList.remove('sprung');return;}$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
 function btnCancel(){btnPressed=false;$('theBtn').classList.remove('pressed','sprung');}
 window.btnDown=btnDown;window.btnUp=btnUp;window.btnCancel=btnCancel;
 
@@ -806,7 +807,7 @@ window.finishOnboard=finishOnboard;
 // SWIPE TO DELETE
 function makeSwipeRow(idea){
   const wrap=document.createElement('div');wrap.className='swipe-wrap';
-  const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';
+  const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';del.style.opacity='0';
   // swipe fully left to delete — no button tap needed
   const row=document.createElement('div');row.className='idea-row';row.dataset.id=idea.id;
   // age bar
@@ -909,7 +910,7 @@ window.selectGroupType=selectGroupType;
 
 function makeGroupSwipeRow(idea,gid){
   const wrap=document.createElement('div');wrap.className='swipe-wrap';
-  const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';
+  const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';del.style.opacity='0';
   // swipe fully left to delete
   const row=document.createElement('div');row.className='idea-row';
   const bar=document.createElement('div');bar.className='age-bar';bar.style.background='var(--gray2)';row.appendChild(bar);
