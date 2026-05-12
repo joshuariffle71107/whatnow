@@ -670,28 +670,29 @@ function triggerTransition5(){
   const btn=$('theBtn');const flood=$('tFlood');const shock=$('tShock');const tText=$('tText');const tSpan=$('tTextSpan');
   const bRect=btn.getBoundingClientRect();
   // Shockwave
-  shock.style.cssText=`position:absolute;left:${bRect.left}px;top:${bRect.top}px;width:${bRect.width}px;height:${bRect.height}px;border-radius:20px;border:2px solid rgba(184,67,47,0.65);animation:shockwave .38s ease-out forwards;`;
+  shock.style.cssText=`position:absolute;left:${bRect.left}px;top:${bRect.top}px;width:${bRect.width}px;height:${bRect.height}px;border-radius:20px;border:2px solid rgba(184,67,47,0.65);animation:shockwave .5s ease-out forwards;`;
   // Flood from button
-  const cx=bRect.left+bRect.width/2;const cy=bRect.top+bRect.height/2;
   flood.style.cssText=`position:absolute;width:${bRect.width}px;height:${bRect.height}px;left:${bRect.left}px;top:${bRect.top}px;border-radius:20px;background:var(--coral);transform:scale(1);transition:none;`;
   flood.offsetHeight;
+  // Step 1: flood expands (starts at 400ms)
   setTimeout(()=>{
-    flood.style.transition='transform .52s cubic-bezier(0.4,0,0.15,1),border-radius .52s ease';
+    flood.style.transition='transform .9s cubic-bezier(0.4,0,0.15,1),border-radius .9s ease';
     flood.style.transform='scale(30)';flood.style.borderRadius='50%';
-  },280);
-  // Text appear
-  setTimeout(()=>{tSpan.textContent='what now?';tText.classList.add('show');},580);
-  // Text morphs
-  setTimeout(()=>{tSpan.textContent='here\'s an idea.';},700);
-  // Card slides up, screen fades in
+  },400);
+  // Step 2: "what now?" fades in on coral (at 900ms)
+  setTimeout(()=>{tSpan.textContent='what now?';tText.classList.add('show');},900);
+  // Step 3: text morphs to "here s an idea." (at 1600ms)
+  setTimeout(()=>{tSpan.textContent='here\'s an idea.';},1600);
+  // Step 4: text fades, suggestion screen loads (at 2400ms)
   setTimeout(()=>{
     tText.classList.remove('show');
     goToSuggest();
-  },960);
+  },2400);
+  // Step 5: coral fades away (at 2700ms)
   setTimeout(()=>{
-    flood.style.transition='opacity .3s';flood.style.opacity='0';
-    setTimeout(()=>{flood.style.cssText='';flood.style.opacity='';shock.style.cssText='';tSpan.textContent='what now?';btnTransitioning=false;},350);
-  },1100);
+    flood.style.transition='opacity .5s';flood.style.opacity='0';
+    setTimeout(()=>{flood.style.cssText='';flood.style.opacity='';shock.style.cssText='';tSpan.textContent='what now?';btnTransitioning=false;},550);
+  },2700);
 }
 
 function goToSuggest(){
