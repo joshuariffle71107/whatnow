@@ -508,11 +508,34 @@
       <span class="btn-sub">suggest something from the group list</span>
     </button>
   </div>
+  <div style="position:sticky;top:0;z-index:40;background:var(--bg);padding-bottom:4px;">
+    <div style="padding:8px 20px 4px;">
+      <input class="add-inp" id="group-search-inp" placeholder="🔍  search group ideas..." oninput="searchGroupIdeas(this.value)" style="width:100%;"/>
+    </div>
+    <div class="filter-row" style="padding-top:4px;">
+      <button class="pill on" onclick="filterGroupPill(this,'anything')">anything</button>
+      <button class="pill" onclick="filterGroupPill(this,'solo')">solo</button>
+      <button class="pill" onclick="filterGroupPill(this,'group')">group</button>
+      <button class="pill" onclick="filterGroupPill(this,'productive')">productive</button>
+      <button class="pill" onclick="filterGroupPill(this,'outside')">outside</button>
+      <button class="pill" onclick="filterGroupPill(this,'free')">free</button>
+    </div>
+  </div>
   <div class="section-label">group ideas</div>
   <div class="idea-list" id="group-idea-list"></div>
-  <div class="add-row">
-    <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()"/>
-    <button class="add-btn" onclick="addGroupIdea()">+ add</button>
+  <div style="padding:10px 20px 14px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;gap:8px;">
+      <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()" style="flex:1;"/>
+      <button class="add-btn" onclick="addGroupIdea()">+ add</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:var(--gray);margin-right:2px;">type:</span>
+      <button class="type-btn on" onclick="selectGroupType(this,'group')">group</button>
+      <button class="type-btn" onclick="selectGroupType(this,'solo')">solo</button>
+      <button class="type-btn" onclick="selectGroupType(this,'productive')">productive</button>
+      <button class="type-btn" onclick="selectGroupType(this,'outside')">outside</button>
+      <button class="type-btn" onclick="selectGroupType(this,'free')">free</button>
+    </div>
   </div>
 </div>
 
@@ -884,14 +907,27 @@ function renderSomeday(){
   somedays.forEach(s=>{const row=document.createElement('div');row.className='idea-row';const bar=document.createElement('div');bar.className='age-bar';bar.style.background=GRAY;row.appendChild(bar);row.innerHTML+=`<div class="idea-dot" style="background:${GRAY};margin-left:6px;"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note||'someday intention'}</div></div><span class="idea-tag tag-someday">someday</span>`;row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){updateDoc(doc(db,'ideas',s.id),{isSomeday:false,note:null});}};el.appendChild(row);});
 }
 
+let groupFilter='anything',groupSearchQuery='',selectedGroupType='group';
+
+function filterGroupPill(el,f){
+  document.querySelectorAll('#s-groupdetail .filter-row .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');groupFilter=f;renderGroupDetail(currentGroupId);
+}
+window.filterGroupPill=filterGroupPill;
+
+function searchGroupIdeas(q){groupSearchQuery=q.toLowerCase().trim();renderGroupDetail(currentGroupId);}
+window.searchGroupIdeas=searchGroupIdeas;
+
+function selectGroupType(el,type){
+  document.querySelectorAll('#s-groupdetail .type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');selectedGroupType=type;
+}
+window.selectGroupType=selectGroupType;
+
 function makeGroupSwipeRow(idea,gid){
   const wrap=document.createElement('div');wrap.className='swipe-wrap';
   const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';
-  del.onclick=async()=>{
-    if(!confirm(`remove "${idea.text}" from group?`))return;
-    const g=groups.find(x=>x.id===gid);if(!g)return;
-    await updateDoc(doc(db,'groups',gid),{ideas:(g.ideas||[]).filter(i=>i.id!==idea.id)});
-  };
+  // swipe fully left to delete
   const row=document.createElement('div');row.className='idea-row';
   const bar=document.createElement('div');bar.className='age-bar';bar.style.background='var(--gray2)';row.appendChild(bar);
   const dot=document.createElement('div');dot.className='idea-dot';dot.style.background=tagColors[idea.tag]||TEAL;dot.style.marginLeft='6px';row.appendChild(dot);
@@ -902,9 +938,40 @@ function makeGroupSwipeRow(idea,gid){
   row.onclick=()=>openGroupIdeaDetail(idea.id,gid);
   // swipe
   let startX=0,currentX=0,swiping=false;
-  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;swiping=false;},{passive:true});
-  row.addEventListener('touchmove',e=>{currentX=e.touches[0].clientX;const dx=startX-currentX;if(dx>10)swiping=true;if(swiping){row.style.transform=`translateX(${Math.max(-72,Math.min(0,-dx))}px)`;del.style.opacity=Math.min(1,dx/72);}},{passive:true});
-  row.addEventListener('touchend',()=>{if(swiping){const dx=startX-currentX;if(dx>50){row.style.transform='translateX(-72px)';del.style.opacity='1';}else{row.style.transform='';del.style.opacity='0';}}swiping=false;});
+  const SNAP=72,FULL=200;
+  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;currentX=startX;swiping=false;row.style.transition='none';},{passive:true});
+  row.addEventListener('touchmove',e=>{
+    currentX=e.touches[0].clientX;
+    const dx=startX-currentX;
+    if(dx>8)swiping=true;
+    if(swiping){
+      const clamped=Math.max(-wrap.offsetWidth,Math.min(0,-dx));
+      row.style.transform=`translateX(${clamped}px)`;
+      del.style.opacity=Math.min(1,dx/SNAP);
+      del.style.width=Math.min(wrap.offsetWidth,Math.max(72,dx))+'px';
+    }
+  },{passive:true});
+  row.addEventListener('touchend',async()=>{
+    if(!swiping)return;
+    swiping=false;
+    const dx=startX-currentX;
+    row.style.transition='transform .3s cubic-bezier(0.25,1,0.5,1)';
+    del.style.transition='opacity .3s,width .3s';
+    if(dx>FULL){
+      row.style.transform=`translateX(-${wrap.offsetWidth}px)`;
+      wrap.style.transition='height .3s ease,opacity .3s ease';
+      wrap.style.overflow='hidden';
+      setTimeout(async()=>{
+        wrap.style.height='0';wrap.style.opacity='0';
+        const g=groups.find(x=>x.id===gid);if(!g)return;
+        await updateDoc(doc(db,'groups',gid),{ideas:(g.ideas||[]).filter(i=>i.id!==idea.id)});
+      },100);
+    } else {
+      row.style.transform='translateX(0)';
+      del.style.opacity='0';
+      del.style.width='72px';
+    }
+  });
   wrap.appendChild(del);wrap.appendChild(row);return wrap;
 }
 
@@ -912,9 +979,12 @@ function renderGroupDetail(gid){
   const g=groups.find(x=>x.id===gid);if(!g)return;
   $('gd-name').textContent=g.name;$('gd-meta').textContent=`${(g.members||[]).length} members`;
   const el=$('group-idea-list');el.innerHTML='';
-  if(!g.ideas||!g.ideas.length){el.innerHTML='<div class="empty">no ideas yet.<br>add something for the group!</div>';}
-  else{(g.ideas||[]).forEach(idea=>el.appendChild(makeGroupSwipeRow(idea,gid)));}
-  const membersEl=$('group-members');membersEl.innerHTML='';
+  let ideas=(g.ideas||[]);
+  if(groupFilter!=='anything')ideas=ideas.filter(i=>(i.tag||'group')===groupFilter);
+  if(groupSearchQuery)ideas=ideas.filter(i=>i.text.toLowerCase().includes(groupSearchQuery));
+  if(!ideas.length){el.innerHTML='<div class="empty">no ideas yet.<br>add something for the group!</div>';}
+  else{ideas.forEach(idea=>el.appendChild(makeGroupSwipeRow(idea,gid)));}
+  const membersEl=$('group-members');if(!membersEl)return;membersEl.innerHTML='';
   (g.usernames||[]).forEach(u=>{const row=document.createElement('div');row.className='member-row';row.innerHTML=`<div class="avatar" style="margin-right:8px;">${u.slice(0,2).toUpperCase()}</div><span>@${u}</span>`;membersEl.appendChild(row);});
 }
 
@@ -1072,7 +1142,16 @@ window.addIdea=addIdea;
 async function addSomeday(){const inp=$('someday-inp');const val=inp.value.trim();if(!val)return;await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,tag:'solo',dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:true,note:'just added',recurring:false});inp.value='';}
 window.addSomeday=addSomeday;
 
-async function addGroupIdea(){const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;const g=groups.find(x=>x.id===currentGroupId);if(!g)return;await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:'group',addedBy:currentUsername}]});inp.value='';}
+async function addGroupIdea(){
+  const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;
+  const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
+  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,addedBy:currentUsername,dateAdded:new Date().toISOString()}]});
+  inp.value='';
+  // reset type picker
+  document.querySelectorAll('#s-groupdetail .type-btn').forEach(b=>b.classList.remove('on'));
+  const first=document.querySelector('#s-groupdetail .type-btn');if(first)first.classList.add('on');
+  selectedGroupType='group';
+}
 window.addGroupIdea=addGroupIdea;
 
 function openDetail(id){
@@ -1107,7 +1186,7 @@ window.detailToSomeday=detailToSomeday;
 async function removeIdea(){if(confirm('remove this idea?')){await deleteDoc(doc(db,'ideas',currentDetailId));goTo('s-home');}}
 window.removeIdea=removeIdea;
 
-function openGroup(id){currentGroupId=id;renderGroupDetail(id);goTo('s-groupdetail');}
+function openGroup(id){currentGroupId=id;groupFilter='anything';groupSearchQuery='';selectedGroupType='group';renderGroupDetail(id);goTo('s-groupdetail');}
 window.openGroup=openGroup;
 
 function openGroupSettings(){
