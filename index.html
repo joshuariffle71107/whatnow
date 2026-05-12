@@ -25,9 +25,7 @@
     }
 
 
-    /* SPLASH — pure CSS, no JS needed */
-    body::before{content:'what now?';position:fixed;inset:0;background:#B8432F;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:Georgia,serif;font-style:italic;font-size:52px;font-weight:700;color:#fff;animation:splashShow 2.5s ease forwards;pointer-events:none;}
-    @keyframes splashShow{0%{opacity:1;}70%{opacity:1;}100%{opacity:0;}}
+
 
     /* SCREENS */
     .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;padding-bottom:80px;background:var(--bg);}
@@ -255,10 +253,7 @@
 </head>
 <body>
 
-<div id="loading" class="loading" style="display:none;">
-  <div class="loading-logo">what now?</div>
-  <div style="font-size:13px;color:var(--gray);">loading...</div>
-</div>
+
 
 <!-- TRANSITION OVERLAY -->
 <div class="t-overlay" id="tOverlay">
@@ -749,7 +744,6 @@ function celebrate(text){
 }
 
 onAuthStateChanged(auth,async user=>{
-  $('loading').style.display='none';
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
@@ -1232,20 +1226,5 @@ function showNudge(){
 }
 </script>
 
-<script>
-// Show loading briefly
-document.getElementById('loading').style.display='flex';
-// Always hide loading and show signin after 4s max
-setTimeout(function(){
-  var l=document.getElementById('loading');
-  if(l)l.style.display='none';
-  // If no screen is active yet, show signin
-  var active=document.querySelector('.screen.active');
-  if(!active||active.id==='s-loading'){
-    var signin=document.getElementById('s-signin');
-    if(signin)signin.classList.add('active');
-  }
-},4000);
-</script>
 </body>
 </html>
