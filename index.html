@@ -24,6 +24,14 @@
       --text:#1a1a1a;--text2:#7A6E6A;
     }
 
+
+    /* SPLASH */
+    .splash{position:fixed;inset:0;background:var(--coral);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease;}
+    .splash.hide{opacity:0;pointer-events:none;}
+    .splash-logo{font-family:Georgia,serif;font-style:italic;font-size:52px;font-weight:700;color:#fff;animation:splashPop .5s cubic-bezier(0.34,1.56,0.64,1);}
+    @keyframes splashPop{from{transform:scale(0.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+    .splash-sub{font-size:14px;color:rgba(255,255,255,0.65);margin-top:8px;font-style:italic;}
+
     /* SCREENS */
     .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;padding-bottom:80px;background:var(--bg);}
     .screen.active{display:flex;}
@@ -57,6 +65,13 @@
     @keyframes btnpulse{0%{transform:scale(1);opacity:0.6;}100%{transform:scale(1.05);opacity:0;}}
     .btn-label{font-size:20px;font-weight:700;color:#fff;font-family:Georgia,serif;font-style:italic;display:block;pointer-events:none;}
     .btn-sub{font-size:11px;color:rgba(255,255,255,0.6);display:block;margin-top:3px;pointer-events:none;}
+
+
+    /* DARK MODE */
+    @media (prefers-color-scheme: dark){body:not(.light-mode){--bg:#161412;--bg2:#1F1B18;--card:#231F1C;--gray:#9A8A85;--gray2:#3A302C;--gray3:#2E2522;--text:#F0EAE7;--text2:#9A8A85;}}
+    body.dark-mode{--bg:#161412;--bg2:#1F1B18;--card:#231F1C;--gray:#9A8A85;--gray2:#3A302C;--gray3:#2E2522;--text:#F0EAE7;--text2:#9A8A85;}
+    body.dark-mode .nav,.dark-mode .nav{background:var(--card);border-color:var(--gray3);}
+    @media (prefers-color-scheme: dark){body:not(.light-mode) .nav{background:var(--card);border-color:var(--gray3);}}
 
     /* TRANSITION OVERLAYS */
     .t-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100vh;pointer-events:none;z-index:500;}
@@ -172,6 +187,19 @@
     .create-btn:active{transform:scale(0.97);}
     .leave-btn{margin:8px 20px;background:none;border:0.5px solid #E24B4A;border-radius:12px;padding:11px;width:calc(100% - 40px);font-size:13px;color:#E24B4A;cursor:pointer;font-family:inherit;}
 
+
+    /* REORDER MODE */
+    .reorder-banner{display:none;background:var(--coral);padding:10px 20px;font-size:13px;color:#fff;font-weight:600;text-align:center;position:sticky;top:0;z-index:50;}
+    .reorder-banner.show{display:block;}
+    .reorder-banner button{background:rgba(255,255,255,0.25);border:none;border-radius:8px;color:#fff;font-size:12px;padding:4px 12px;margin-left:10px;cursor:pointer;font-family:inherit;font-weight:600;}
+    .drag-handle{width:24px;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;cursor:grab;flex-shrink:0;opacity:0;transition:opacity .2s;padding:4px;}
+    .drag-handle span{display:block;width:14px;height:2px;background:var(--gray);border-radius:2px;}
+    body.reordering .drag-handle{opacity:1;}
+    body.reordering .idea-row{cursor:grab;}
+    body.reordering .swipe-wrap{overflow:visible;}
+    .idea-row.dragging{opacity:0.4;border:1.5px dashed var(--coral);}
+    .idea-row.drag-over{border-color:var(--coral);background:var(--coral-light);}
+
     /* SOMEDAY */
     .someday-note{font-size:11px;color:var(--gray);font-style:italic;margin-top:2px;}
     .empty{padding:60px 20px;text-align:center;color:var(--gray);font-size:14px;line-height:1.7;}
@@ -229,6 +257,8 @@
   </style>
 </head>
 <body>
+
+<div id="splash" class="splash"><div class="splash-logo">what now?</div><div class="splash-sub">your list for life's in-between moments</div></div>
 
 <div id="loading" class="loading">
   <div class="loading-logo">what now?</div>
@@ -331,6 +361,9 @@
       <span class="btn-sub">tap for a suggestion from your list</span>
     </button>
   </div>
+  <div style="padding:0 20px 8px;position:relative;">
+    <input class="add-inp" id="search-inp" placeholder="🔍  search your list..." oninput="searchIdeas(this.value)" style="width:100%;padding-left:14px;"/>
+  </div>
   <div class="filter-row">
     <button class="pill on" onclick="filterPill(this,'anything')">anything</button>
     <button class="pill" onclick="filterPill(this,'solo')">solo</button>
@@ -339,6 +372,7 @@
     <button class="pill" onclick="filterPill(this,'outside')">outside</button>
     <button class="pill" onclick="filterPill(this,'free')">free</button>
   </div>
+  <div class="reorder-banner" id="reorder-banner">hold & drag to reorder<button onclick="exitReorder()">done</button></div>
   <div class="section-label">your list</div>
   <div class="idea-list" id="idea-list"></div>
   <div class="add-row">
@@ -554,6 +588,10 @@
   </div>
   <div class="section-label">account settings</div>
   <div class="profile-section">
+    <div class="profile-row" onclick="toggleDarkMode()">
+      <span class="profile-row-label">dark mode</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="dark-mode-val">off</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
     <div class="profile-row" onclick="openEditField('username')"><span class="profile-row-label">username</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-username-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
     <div class="profile-row" onclick="openEditField('email')"><span class="profile-row-label">email</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-email-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
     <div class="profile-row" onclick="openEditField('password')"><span class="profile-row-label">password</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">••••••••</span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
@@ -660,8 +698,8 @@ function goTo(id){
 window.goTo=goTo;
 
 // BUTTON PRESS
-function btnDown(e){if(e)e.preventDefault();if(btnTransitioning)return;btnPressed=true;$('theBtn').classList.add('pressed');}
-function btnUp(e){if(e)e.preventDefault();if(!btnPressed||btnTransitioning)return;btnPressed=false;$('theBtn').classList.remove('pressed');$('theBtn').classList.add('sprung');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
+function btnDown(e){if(e)e.preventDefault();if(btnTransitioning)return;btnPressed=true;$('theBtn').classList.add('pressed');haptic('press');}
+function btnUp(e){if(e)e.preventDefault();if(!btnPressed||btnTransitioning)return;btnPressed=false;$('theBtn').classList.remove('pressed');$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
 function btnCancel(){btnPressed=false;$('theBtn').classList.remove('pressed','sprung');}
 window.btnDown=btnDown;window.btnUp=btnUp;window.btnCancel=btnCancel;
 
@@ -717,11 +755,13 @@ function celebrate(text){
 
 onAuthStateChanged(auth,async user=>{
   $('loading').style.display='none';
+  hideSplash();
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
 
 function setupListeners(){
+  loadUserPrefs();
   if(unsubIdeas)unsubIdeas();if(unsubSomedays)unsubSomedays();if(unsubGroups)unsubGroups();
   const uid=currentUser.uid;
   unsubIdeas=onSnapshot(query(collection(db,'ideas'),where('userId','==',uid),where('isDone','==',false),where('isSomeday','==',false)),snap=>{ideas=snap.docs.map(d=>({id:d.id,...d.data()}));renderIdeas();});
@@ -767,8 +807,10 @@ window.toggleOnboard=toggleOnboard;
 
 async function finishOnboard(){
   const selected=document.querySelectorAll('.onboard-opt.on');const batch=[];
-  selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false}));});
-  await Promise.all(batch);await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true});
+  const selectedTexts=[];
+  selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;selectedTexts.push(text);const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false,order:selectedTexts.length-1}));});
+  const prefs=getOnboardPreferences(selectedTexts);
+  await Promise.all(batch);await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true,prefs});
   setupListeners();$('main-nav').style.display='flex';goTo('s-home');
 }
 window.finishOnboard=finishOnboard;
@@ -778,30 +820,61 @@ function makeSwipeRow(idea){
   const wrap=document.createElement('div');wrap.className='swipe-wrap';
   const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';
   del.onclick=async()=>{if(confirm(`remove "${idea.text}"?`)){await deleteDoc(doc(db,'ideas',idea.id));}};
-  const row=document.createElement('div');row.className='idea-row';
+  const row=document.createElement('div');row.className='idea-row';row.dataset.id=idea.id;
   // age bar
   const level=ageLevel(idea.dateAdded);
   const bar=document.createElement('div');bar.className='age-bar';bar.style.background=ageBorderColors[level];row.appendChild(bar);
+  // drag handle (visible in reorder mode)
+  const handle=document.createElement('div');handle.className='drag-handle';handle.innerHTML='<span></span><span></span><span></span>';row.appendChild(handle);
   const dot=document.createElement('div');dot.className='idea-dot';dot.style.background=tagColors[idea.tag]||GRAY;row.appendChild(dot);
   const info=document.createElement('div');info.className='idea-info';
   info.innerHTML=`<div class="idea-text">${idea.text}</div><div class="idea-age">${ageText(idea.dateAdded)}${level>=2?' · been a while!':''}</div>`;
   row.appendChild(info);
   const tag=document.createElement('span');tag.className=`idea-tag ${tagClasses[idea.tag]||'tag-solo'}`;tag.textContent=idea.tag;row.appendChild(tag);
-  row.onclick=()=>openDetail(idea.id);
-  // Touch swipe
+  // Long press to enter reorder
+  let pressTimer=null;
+  row.addEventListener('touchstart',e=>{
+    if(reorderMode)return;
+    pressTimer=setTimeout(()=>{haptic('press');enterReorder();},500);
+  },{passive:true});
+  row.addEventListener('touchend',()=>{clearTimeout(pressTimer);});
+  row.addEventListener('touchmove',()=>{clearTimeout(pressTimer);},{passive:true});
+  row.onclick=()=>{if(!reorderMode)openDetail(idea.id);};
+  // Drag events for reorder
+  row.draggable=true;
+  row.addEventListener('dragstart',e=>{dragSrcId=idea.id;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+  row.addEventListener('dragend',()=>{row.classList.remove('dragging');document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));});
+  row.addEventListener('dragover',e=>{e.preventDefault();if(dragSrcId!==idea.id){row.classList.add('drag-over');}});
+  row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+  row.addEventListener('drop',e=>{
+    e.preventDefault();row.classList.remove('drag-over');
+    if(dragSrcId===idea.id)return;
+    const srcIdx=ideaOrder.indexOf(dragSrcId);const dstIdx=ideaOrder.indexOf(idea.id);
+    if(srcIdx<0||dstIdx<0)return;
+    ideaOrder.splice(srcIdx,1);ideaOrder.splice(dstIdx,0,dragSrcId);
+    renderIdeas();
+  });
+  // Touch swipe (only when not reordering)
   let startX=0,currentX=0,swiping=false;
-  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;swiping=false;},{passive:true});
-  row.addEventListener('touchmove',e=>{currentX=e.touches[0].clientX;const dx=startX-currentX;if(dx>10)swiping=true;if(swiping){row.style.transform=`translateX(${Math.max(-72,Math.min(0,-dx))}px)`;del.style.opacity=Math.min(1,dx/72);}},{passive:true});
-  row.addEventListener('touchend',()=>{if(swiping){const dx=startX-currentX;if(dx>50){row.style.transform='translateX(-72px)';del.style.opacity='1';}else{row.style.transform='';del.style.opacity='0';}}swiping=false;});
+  row.addEventListener('touchstart',e=>{if(reorderMode)return;startX=e.touches[0].clientX;swiping=false;},{passive:true});
+  row.addEventListener('touchmove',e=>{if(reorderMode)return;currentX=e.touches[0].clientX;const dx=startX-currentX;if(dx>10)swiping=true;if(swiping){row.style.transform=`translateX(${Math.max(-72,Math.min(0,-dx))}px)`;del.style.opacity=Math.min(1,dx/72);}},{passive:true});
+  row.addEventListener('touchend',()=>{if(reorderMode)return;if(swiping){const dx=startX-currentX;if(dx>50){row.style.transform='translateX(-72px)';del.style.opacity='1';}else{row.style.transform='';del.style.opacity='0';}}swiping=false;});
   wrap.appendChild(del);wrap.appendChild(row);return wrap;
 }
 
 function renderIdeas(){
   const el=$('idea-list');if(!el)return;
-  const active=ideas.filter(i=>currentFilter==='anything'||i.tag===currentFilter);
-  if(!active.length){el.innerHTML='<div class="empty">your list is empty!<br>add some ideas below 👇</div>';return;}
+  let active=ideas.filter(i=>currentFilter==='anything'||i.tag===currentFilter);
+  if(searchQuery)active=active.filter(i=>i.text.toLowerCase().includes(searchQuery));
+  // sort by order field if set
+  active.sort((a,b)=>(a.order??999)-(b.order??999));
+  if(!active.length){
+    el.innerHTML=searchQuery?'<div class="empty">no ideas match that search.</div>':'<div class="empty">your list is empty!<br>add some ideas below 👇</div>';
+    return;
+  }
   el.innerHTML='';
   active.forEach(idea=>el.appendChild(makeSwipeRow(idea)));
+  ideaOrder=active.map(i=>i.id);
 }
 
 function renderGroups(){
@@ -860,10 +933,26 @@ function renderProfile(){
   closeEditField();
 }
 
+let userPrefs=null;
+async function loadUserPrefs(){
+  if(!currentUser)return;
+  const p=await getDoc(doc(db,'users',currentUser.uid));
+  if(p.exists()&&p.data().prefs)userPrefs=p.data().prefs;
+}
+
 function getPool(){
   let pool=[...ideas];
-  if(currentEnergy==='low'){const l=pool.filter(i=>i.tag==='solo'||i.tag==='productive'||i.tag==='free');if(l.length)pool=l;}
-  if(currentEnergy==='high'){const h=pool.filter(i=>i.tag==='group'||i.tag==='outside');if(h.length)pool=h;}
+  const energyTags=getEnergyTags(currentEnergy);
+  if(energyTags){const filtered=pool.filter(i=>energyTags.includes(i.tag));if(filtered.length)pool=filtered;}
+  // Weight by user prefs — ideas matching preferred categories appear more often
+  if(userPrefs&&pool.length>1){
+    const weighted=[];
+    pool.forEach(idea=>{
+      const w=idea.tag==='group'?(userPrefs.group||1):idea.tag==='solo'?(userPrefs.solo||1):idea.tag==='productive'?(userPrefs.productive||1):1;
+      for(let i=0;i<Math.max(1,Math.min(3,Math.round(w)));i++)weighted.push(idea);
+    });
+    return weighted;
+  }
   return pool;
 }
 
@@ -876,6 +965,85 @@ function showSug(idea){
   $('skip-q').style.display='none';
   doneSugText=idea.text;currentDetailId=idea.id;doneSugRecurring=idea.recurring!==false;
 }
+// ── SPLASH ────────────────────────────────────────────────────────────────
+function hideSplash(){const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('hide');setTimeout(()=>s.remove(),700);},800);}
+
+// ── HAPTICS ───────────────────────────────────────────────────────────────
+function haptic(type){try{if(navigator.vibrate){if(type==='press')navigator.vibrate(8);else if(type==='spring')navigator.vibrate([6,30,10]);else if(type==='success')navigator.vibrate([10,50,20,50,10]);}}catch(e){}}
+
+// ── DARK MODE ─────────────────────────────────────────────────────────────
+function initDarkMode(){
+  const stored=localStorage.getItem('wn-dark');
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(stored==='dark'||(stored===null&&prefersDark)){document.body.classList.add('dark-mode');document.body.classList.remove('light-mode');}
+  else if(stored==='light'){document.body.classList.add('light-mode');document.body.classList.remove('dark-mode');}
+  updateDarkModeVal();
+}
+function toggleDarkMode(){
+  const isDark=document.body.classList.contains('dark-mode');
+  const isLight=document.body.classList.contains('light-mode');
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(!isDark&&!isLight){if(prefersDark){document.body.classList.add('light-mode');localStorage.setItem('wn-dark','light');}else{document.body.classList.add('dark-mode');localStorage.setItem('wn-dark','dark');}}
+  else if(isDark){document.body.classList.remove('dark-mode');document.body.classList.add('light-mode');localStorage.setItem('wn-dark','light');}
+  else{document.body.classList.remove('light-mode');document.body.classList.remove('dark-mode');localStorage.removeItem('wn-dark');}
+  updateDarkModeVal();
+}
+window.toggleDarkMode=toggleDarkMode;
+function updateDarkModeVal(){
+  const el=document.getElementById('dark-mode-val');if(!el)return;
+  const isDark=document.body.classList.contains('dark-mode');
+  const isLight=document.body.classList.contains('light-mode');
+  el.textContent=isDark?'on':isLight?'off (overriding system)':'auto';
+}
+initDarkMode();
+
+// ── SEARCH ────────────────────────────────────────────────────────────────
+let searchQuery='';
+function searchIdeas(q){searchQuery=q.toLowerCase().trim();renderIdeas();}
+window.searchIdeas=searchIdeas;
+
+// ── ENERGY DEFINITIONS ────────────────────────────────────────────────────
+// Low = solo, free, productive (low effort, staying in)
+// Medium = anything
+// High = group, outside (active, social)
+function getEnergyTags(energy){
+  if(energy==='low')return['solo','free','productive'];
+  if(energy==='high')return['group','outside'];
+  return null; // medium = no filter
+}
+
+// ── REORDER ───────────────────────────────────────────────────────────────
+let reorderMode=false,dragSrcId=null,ideaOrder=[];
+function enterReorder(){
+  reorderMode=true;document.body.classList.add('reordering');
+  document.getElementById('reorder-banner').classList.add('show');
+  renderIdeas();haptic('press');
+}
+function exitReorder(){
+  reorderMode=false;document.body.classList.remove('reordering');
+  document.getElementById('reorder-banner').classList.remove('show');
+  // save order to firebase
+  if(ideaOrder.length){ideaOrder.forEach((id,i)=>{const idea=ideas.find(x=>x.id===id);if(idea)updateDoc(doc(db,'ideas',id),{order:i});});}
+  renderIdeas();
+}
+window.exitReorder=exitReorder;
+
+// ── ONBOARDING LEARNING ───────────────────────────────────────────────────
+function getOnboardPreferences(selectedTexts){
+  const cats={fun:0,productive:0,outside:0,solo:0,group:0};
+  const funItems=['bowling with friends','try a new restaurant','movie night','game night','watch a documentary'];
+  const productiveItems=['deep clean my room','go to the gym','meal prep for the week','cook a recipe i've never tried','start reading a book'];
+  const outsideItems=['explore a new part of town','take a photography walk'];
+  selectedTexts.forEach(t=>{
+    if(funItems.includes(t))cats.fun++;
+    if(productiveItems.includes(t))cats.productive++;
+    if(outsideItems.includes(t))cats.outside++;
+    const tag=tagMap[t]||'solo';
+    if(tag==='group')cats.group++;else cats.solo++;
+  });
+  return cats;
+}
+
 function goBackFromSuggest(){if(isGroupSuggest){goTo('s-groupdetail');}else{goTo('s-home');}}
 window.goBackFromSuggest=goBackFromSuggest;
 
@@ -898,6 +1066,7 @@ function skipIdea(){skipCount++;if(currentDetailId){const idea=ideas.find(i=>i.i
 window.skipIdea=skipIdea;
 
 async function doIt(){
+  haptic('success');
   if(currentDetailId){if(doneSugRecurring){await updateDoc(doc(db,'ideas',currentDetailId),{lastDone:serverTimestamp(),skipCount:0});}else{await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});}}
   celebrate(oneLiners[Math.floor(Math.random()*oneLiners.length)]);setTimeout(()=>goTo('s-home'),2500);
 }
