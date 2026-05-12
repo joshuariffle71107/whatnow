@@ -359,7 +359,7 @@
 <!-- SUGGEST -->
 <div id="s-suggest" class="screen">
   <div style="padding:52px 20px 8px;display:flex;align-items:center;gap:12px;">
-    <button class="back-btn" onclick="goTo('s-home')">← back</button>
+    <button class="back-btn" onclick="goBackFromSuggest()">← back</button>
   </div>
   <div style="padding:0 20px 8px;">
     <div style="font-size:12px;color:var(--gray);margin-bottom:2px;">pulled from your list</div>
@@ -678,9 +678,9 @@ function triggerTransition5(){
   setTimeout(()=>{
     flood.style.transition='transform .52s cubic-bezier(0.4,0,0.15,1),border-radius .52s ease';
     flood.style.transform='scale(30)';flood.style.borderRadius='50%';
-  },200);
+  },280);
   // Text appear
-  setTimeout(()=>{tSpan.textContent='what now?';tText.classList.add('show');},420);
+  setTimeout(()=>{tSpan.textContent='what now?';tText.classList.add('show');},580);
   // Text morphs
   setTimeout(()=>{tSpan.textContent='here\'s an idea.';},700);
   // Card slides up, screen fades in
@@ -875,6 +875,9 @@ function showSug(idea){
   $('skip-q').style.display='none';
   doneSugText=idea.text;currentDetailId=idea.id;doneSugRecurring=idea.recurring!==false;
 }
+function goBackFromSuggest(){if(isGroupSuggest){goTo('s-groupdetail');}else{goTo('s-home');}}
+window.goBackFromSuggest=goBackFromSuggest;
+
 window.goSuggest=function(){const pool=getPool();if(!pool.length){alert('add some ideas first!');return;}isGroupSuggest=false;currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');};
 
 function goSuggestGroup(){
