@@ -62,6 +62,12 @@
     .btn-sub{font-size:11px;color:rgba(255,255,255,0.6);display:block;margin-top:3px;pointer-events:none;}
 
 
+    /* SPLASH */
+    #splash{position:fixed;inset:0;background:#B8432F;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .7s ease;pointer-events:none;}
+    #splash.gone{opacity:0;}
+    #splash-logo{font-family:Georgia,serif;font-style:italic;font-size:52px;font-weight:700;color:#fff;animation:splashPop .5s cubic-bezier(0.34,1.56,0.64,1) both;}
+    #splash-sub{font-size:14px;color:rgba(255,255,255,0.65);margin-top:8px;font-style:italic;}
+    @keyframes splashPop{from{transform:scale(0.75);opacity:0;}to{transform:scale(1);opacity:1;}}
     /* DARK MODE */
     @media (prefers-color-scheme: dark){body:not(.light-mode){--bg:#161412;--bg2:#1F1B18;--card:#231F1C;--gray:#9A8A85;--gray2:#3A302C;--gray3:#2E2522;--text:#F0EAE7;--text2:#9A8A85;}}
     body.dark-mode{--bg:#161412;--bg2:#1F1B18;--card:#231F1C;--gray:#9A8A85;--gray2:#3A302C;--gray3:#2E2522;--text:#F0EAE7;--text2:#9A8A85;}
@@ -266,6 +272,8 @@
 <div class="celebration" id="celebration">
   <div class="cel-toast" id="celToast"></div>
 </div>
+
+<div id="splash"><div id="splash-logo">what now?</div><div id="splash-sub">your list for life's in-between moments</div></div>
 
 <!-- SIGN IN -->
 <div id="s-signin" class="screen active">
@@ -1228,5 +1236,17 @@ function showNudge(){
 }
 </script>
 
+
+<script>
+(function(){
+  var s = document.getElementById('splash');
+  if(!s) return;
+  // Hide after 2.2s — pure timer, zero Firebase dependency
+  setTimeout(function(){
+    s.classList.add('gone');
+    setTimeout(function(){ s.style.display='none'; }, 750);
+  }, 2200);
+})();
+</script>
 </body>
 </html>
