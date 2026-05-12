@@ -28,7 +28,7 @@
 
 
     /* SCREENS */
-    .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;padding-bottom:80px;background:var(--bg);}
+    .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;padding-bottom:80px;background:var(--bg);will-change:opacity,transform;}
     .screen.active{display:flex;}
 
     /* NAV */
@@ -662,14 +662,23 @@ const allTabs=['home','groups','someday','profile'];
 const noNavScreens=['s-signin','s-signup','s-onboard','s-suggest','s-detail','s-groupdetail','s-creategroup','s-groupideadetail','s-groupsettings'];
 
 function goTo(id){
-  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.opacity='';s.style.transform='';});
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+    s.style.opacity='';s.style.transform='';s.style.transition='';
+  });
   const next=$(id);
-  next.style.opacity='0';next.style.transform='translateX(20px)';
+  // pre-position without showing
+  next.style.transition='none';
+  next.style.opacity='0';
+  next.style.transform='translateX(16px)';
   next.classList.add('active');
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    next.style.transition='opacity .2s ease,transform .2s ease';
-    next.style.opacity='1';next.style.transform='translateX(0)';
-  }));
+  // force paint then animate
+  next.getBoundingClientRect();
+  requestAnimationFrame(()=>{
+    next.style.transition='opacity .25s ease,transform .25s ease';
+    next.style.opacity='1';
+    next.style.transform='translateX(0)';
+  });
   $('main-nav').style.display=noNavScreens.includes(id)?'none':'flex';
   allTabs.forEach(t=>{
     const on=(t==='home'&&id==='s-home')||(t==='groups'&&['s-groups','s-groupdetail','s-creategroup','s-groupideadetail'].includes(id))||(t==='someday'&&id==='s-someday')||(t==='profile'&&id==='s-profile');
@@ -686,11 +695,11 @@ function goTo(id){
 window.goTo=goTo;
 
 // BUTTON PRESS
-let btnPressTime=0,btnTouchValid=false;
+let btnTouchValid=false;
 function btnDown(e){
   if(e)e.preventDefault();
   if(btnTransitioning)return;
-  // Only activate if touch is in the inner 70% of the button (dead zone on edges)
+  // Dead zone on edges — only inner 70% fires
   if(e&&e.touches){
     const t=e.touches[0];
     const rect=$('theBtn').getBoundingClientRect();
@@ -701,10 +710,10 @@ function btnDown(e){
     btnTouchValid=true;
   }
   if(!btnTouchValid)return;
-  btnPressed=true;btnPressTime=Date.now();
+  btnPressed=true;
   $('theBtn').classList.add('pressed');haptic('press');
 }
-function btnUp(e){if(e)e.preventDefault();if(!btnPressed||!btnTouchValid||btnTransitioning)return;btnPressed=false;const held=Date.now()-btnPressTime;$('theBtn').classList.remove('pressed');if(held<60){$('theBtn').classList.remove('sprung');return;}$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
+function btnUp(e){if(e)e.preventDefault();if(!btnPressed||!btnTouchValid||btnTransitioning)return;btnPressed=false;$('theBtn').classList.remove('pressed');$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
 function btnCancel(){btnPressed=false;$('theBtn').classList.remove('pressed','sprung');}
 window.btnDown=btnDown;window.btnUp=btnUp;window.btnCancel=btnCancel;
 
