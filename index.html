@@ -468,8 +468,17 @@
 
 <!-- GROUP DETAIL -->
 <div id="s-groupdetail" class="screen">
-  <div style="padding:52px 20px 4px;"><button class="back-btn" onclick="goTo('s-groups')">← groups</button></div>
-  <div style="padding:8px 20px 12px;"><div style="font-size:24px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;" id="gd-name"></div><div style="font-size:13px;color:var(--gray);margin-top:2px;" id="gd-meta"></div></div>
+  <div style="padding:52px 20px 4px;display:flex;justify-content:space-between;align-items:center;">
+    <button class="back-btn" onclick="goTo('s-groups')">← groups</button>
+    <button onclick="openGroupSettings()" style="background:none;border:none;cursor:pointer;padding:6px 10px;border-radius:10px;font-size:13px;color:var(--gray);font-family:inherit;display:flex;align-items:center;gap:5px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      settings
+    </button>
+  </div>
+  <div style="padding:8px 20px 12px;">
+    <div style="font-size:24px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;" id="gd-name"></div>
+    <div style="font-size:13px;color:var(--gray);margin-top:2px;" id="gd-meta"></div>
+  </div>
   <div style="padding:0 20px 16px;">
     <button class="the-btn" style="box-shadow:0 4px 14px rgba(184,67,47,0.28);" onclick="goSuggestGroup()">
       <div class="btn-shimmer"></div>
@@ -483,18 +492,31 @@
     <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()"/>
     <button class="add-btn" onclick="addGroupIdea()">+ add</button>
   </div>
-  <div class="section-label" style="margin-top:4px;">members</div>
-  <div id="group-members" style="padding:0 20px 12px;"></div>
-  <div style="padding:0 20px 8px;">
-    <div class="form-label" style="margin-bottom:8px;">invite someone new</div>
+</div>
+
+<!-- GROUP SETTINGS -->
+<div id="s-groupsettings" class="screen">
+  <div style="padding:52px 20px 4px;"><button class="back-btn" onclick="goTo('s-groupdetail')">← back</button></div>
+  <div style="padding:8px 20px 20px;">
+    <div style="font-size:24px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;" id="gs-name"></div>
+    <div style="font-size:13px;color:var(--gray);margin-top:2px;">group settings</div>
+  </div>
+  <div class="section-label">members</div>
+  <div id="group-members" style="padding:0 20px 16px;"></div>
+  <div class="section-label">invite someone new</div>
+  <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:10px;">
     <div class="invite-row">
       <span class="invite-prefix">@</span>
       <input class="add-inp" id="add-member-inp" placeholder="username" autocomplete="off" style="flex:1;"/>
       <button class="add-btn" onclick="addMemberToGroup()">add</button>
     </div>
-    <div class="auth-err" id="add-member-err" style="margin-top:6px;"></div>
+    <div class="auth-err" id="add-member-err"></div>
+    <p style="font-size:12px;color:var(--gray);line-height:1.5;">usernames are case-sensitive. they will see the group automatically.</p>
   </div>
-  <button class="leave-btn" onclick="leaveGroup()">leave group</button>
+  <div class="section-label">danger zone</div>
+  <div style="padding:8px 20px;">
+    <button class="leave-btn" style="margin:0;width:100%;" onclick="leaveGroup()">leave group</button>
+  </div>
 </div>
 
 <!-- GROUP IDEA DETAIL -->
@@ -611,7 +633,7 @@ function $(id){return document.getElementById(id);}
 function isValidUsername(u){return /^[a-zA-Z0-9_]{3,}$/.test(u);}
 
 const allTabs=['home','groups','someday','profile'];
-const noNavScreens=['s-signin','s-signup','s-onboard','s-suggest','s-detail','s-groupdetail','s-creategroup','s-groupideadetail'];
+const noNavScreens=['s-signin','s-signup','s-onboard','s-suggest','s-detail','s-groupdetail','s-creategroup','s-groupideadetail','s-groupsettings'];
 
 function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.opacity='';s.style.transform='';});
@@ -932,8 +954,16 @@ window.detailToSomeday=detailToSomeday;
 async function removeIdea(){if(confirm('remove this idea?')){await deleteDoc(doc(db,'ideas',currentDetailId));goTo('s-home');}}
 window.removeIdea=removeIdea;
 
-function openGroup(id){currentGroupId=id;renderGroupDetail(id);$('add-member-err').textContent='';$('add-member-inp').value='';goTo('s-groupdetail');}
+function openGroup(id){currentGroupId=id;renderGroupDetail(id);goTo('s-groupdetail');}
 window.openGroup=openGroup;
+
+function openGroupSettings(){
+  const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
+  $('gs-name').textContent=g.name;
+  $('add-member-err').textContent='';$('add-member-inp').value='';
+  goTo('s-groupsettings');
+}
+window.openGroupSettings=openGroupSettings;
 
 // GROUP IDEA DETAIL
 function openGroupIdeaDetail(ideaId,gid){
