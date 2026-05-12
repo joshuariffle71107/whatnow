@@ -255,7 +255,7 @@
 </head>
 <body>
 
-<div id="loading" class="loading">
+<div id="loading" class="loading" style="display:none;">
   <div class="loading-logo">what now?</div>
   <div style="font-size:13px;color:var(--gray);">loading...</div>
 </div>
@@ -1230,6 +1230,22 @@ function showNudge(){
   if(Math.random()<0.3)el.innerHTML=`<div class="nudge">${nudges[Math.floor(Math.random()*nudges.length)]}</div>`;
   else el.innerHTML='';
 }
+</script>
+
+<script>
+// Show loading briefly
+document.getElementById('loading').style.display='flex';
+// Always hide loading and show signin after 4s max
+setTimeout(function(){
+  var l=document.getElementById('loading');
+  if(l)l.style.display='none';
+  // If no screen is active yet, show signin
+  var active=document.querySelector('.screen.active');
+  if(!active||active.id==='s-loading'){
+    var signin=document.getElementById('s-signin');
+    if(signin)signin.classList.add('active');
+  }
+},4000);
 </script>
 </body>
 </html>
