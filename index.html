@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -755,7 +755,6 @@ function celebrate(text){
 
 onAuthStateChanged(auth,async user=>{
   $('loading').style.display='none';
-  hideSplash();
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
@@ -968,12 +967,11 @@ function showSug(idea){
 // ── SPLASH ────────────────────────────────────────────────────────────────
 function hideSplash(){
   const s=document.getElementById('splash');if(!s||s._hidden)return;
-  s._hidden=true;
-  s.classList.add('hide');
+  s._hidden=true;s.classList.add('hide');
   setTimeout(()=>{if(s.parentNode)s.parentNode.removeChild(s);},700);
 }
-// Failsafe — always hide splash after 3.5s no matter what
-setTimeout(hideSplash, 3500);
+// Always hide splash after 2s — no waiting for Firebase
+setTimeout(hideSplash, 2000);
 
 // ── HAPTICS ───────────────────────────────────────────────────────────────
 function haptic(type){try{if(navigator.vibrate){if(type==='press')navigator.vibrate(8);else if(type==='spring')navigator.vibrate([6,30,10]);else if(type==='success')navigator.vibrate([10,50,20,50,10]);}}catch(e){}}
