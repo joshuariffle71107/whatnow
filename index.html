@@ -821,14 +821,19 @@ function makeSwipeRow(idea){
   row.onclick=()=>openDetail(idea.id);
 
   // Touch swipe — full swipe left to delete, partial bounces back
-  let startX=0,currentX=0,swiping=false;
+  let startX=0,startY=0,currentX=0,swiping=false,swipeEligible=false;
   const SNAP=72,FULL=200;
-  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;currentX=startX;swiping=false;row.style.transition='none';},{passive:true});
+  row.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;startY=e.touches[0].clientY;currentX=startX;swiping=false;
+    const rowRect=row.getBoundingClientRect();
+    swipeEligible=(startX>rowRect.right-80);
+    row.style.transition='none';
+  },{passive:true});
   row.addEventListener('touchmove',e=>{
     currentX=e.touches[0].clientX;
     const dx=startX-currentX;
-    const dy=Math.abs(e.touches[0].clientY-(e.touches[0].clientY));
-    if(dx>20&&dx>5)swiping=true;
+    const dy=Math.abs(e.touches[0].clientY-startY);
+    if(swipeEligible&&dx>16&&dx>dy*1.5)swiping=true;
     if(swiping){
       const clamped=Math.max(-wrap.offsetWidth,Math.min(0,-dx));
       row.style.transform=`translateX(${clamped}px)`;
@@ -915,14 +920,19 @@ function makeGroupSwipeRow(idea,gid){
   const tag=document.createElement('span');tag.className=`idea-tag ${tagClasses[idea.tag]||'tag-group'}`;tag.textContent=idea.tag||'group';row.appendChild(tag);
   row.onclick=()=>openGroupIdeaDetail(idea.id,gid);
   // swipe
-  let startX=0,currentX=0,swiping=false;
+  let startX=0,startY=0,currentX=0,swiping=false,swipeEligible=false;
   const SNAP=72,FULL=200;
-  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;currentX=startX;swiping=false;row.style.transition='none';},{passive:true});
+  row.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;startY=e.touches[0].clientY;currentX=startX;swiping=false;
+    const rowRect=row.getBoundingClientRect();
+    swipeEligible=(startX>rowRect.right-80);
+    row.style.transition='none';
+  },{passive:true});
   row.addEventListener('touchmove',e=>{
     currentX=e.touches[0].clientX;
     const dx=startX-currentX;
-    const dy=Math.abs(e.touches[0].clientY-(e.touches[0].clientY));
-    if(dx>20&&dx>5)swiping=true;
+    const dy=Math.abs(e.touches[0].clientY-startY);
+    if(swipeEligible&&dx>16&&dx>dy*1.5)swiping=true;
     if(swiping){
       const clamped=Math.max(-wrap.offsetWidth,Math.min(0,-dx));
       row.style.transform=`translateX(${clamped}px)`;
