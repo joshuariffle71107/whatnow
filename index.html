@@ -85,7 +85,7 @@
     @keyframes shockwave{0%{transform:scale(1);opacity:0.8;}100%{transform:scale(1.2);opacity:0;}}
 
     /* FILTERS */
-    .filter-row{display:flex;gap:7px;padding:12px 20px 8px;overflow-x:auto;scrollbar-width:none;}
+    .filter-row{display:flex;gap:7px;padding:12px 20px 8px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:40;background:var(--bg);}
     .filter-row::-webkit-scrollbar{display:none;}
     .pill{border:0.5px solid var(--gray2);background:var(--card);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--gray);cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s;}
     .pill.on{background:var(--coral);border-color:var(--coral);color:#fff;}
@@ -359,7 +359,7 @@
       <span class="btn-sub">tap for a suggestion from your list</span>
     </button>
   </div>
-  <div style="padding:0 20px 8px;position:relative;">
+  <div style="padding:0 20px 8px;position:sticky;top:0;z-index:41;background:var(--bg);">
     <input class="add-inp" id="search-inp" placeholder="🔍  search your list..." oninput="searchIdeas(this.value)" style="width:100%;padding-left:14px;"/>
   </div>
   <div class="filter-row">
@@ -838,20 +838,23 @@ function makeSwipeRow(idea){
   row.addEventListener('touchend',()=>{clearTimeout(pressTimer);});
   row.addEventListener('touchmove',()=>{clearTimeout(pressTimer);},{passive:true});
   row.onclick=()=>{if(!reorderMode)openDetail(idea.id);};
-  // Drag events for reorder
-  row.draggable=true;
-  row.addEventListener('dragstart',e=>{dragSrcId=idea.id;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
-  row.addEventListener('dragend',()=>{row.classList.remove('dragging');document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));});
-  row.addEventListener('dragover',e=>{e.preventDefault();if(dragSrcId!==idea.id){row.classList.add('drag-over');}});
-  row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
-  row.addEventListener('drop',e=>{
-    e.preventDefault();row.classList.remove('drag-over');
-    if(dragSrcId===idea.id)return;
-    const srcIdx=ideaOrder.indexOf(dragSrcId);const dstIdx=ideaOrder.indexOf(idea.id);
+  // Touch drag for reorder
+  row.addEventListener('touchmove',e=>{
+    if(!reorderMode)return;
+    e.preventDefault();
+    const touch=e.touches[0];
+    const el=document.elementFromPoint(touch.clientX,touch.clientY);
+    if(!el)return;
+    const targetRow=el.closest('.idea-row');
+    if(!targetRow||targetRow===row)return;
+    const targetId=targetRow.dataset.id;
+    if(!targetId||targetId===idea.id)return;
+    const srcIdx=ideaOrder.indexOf(idea.id);
+    const dstIdx=ideaOrder.indexOf(targetId);
     if(srcIdx<0||dstIdx<0)return;
-    ideaOrder.splice(srcIdx,1);ideaOrder.splice(dstIdx,0,dragSrcId);
+    ideaOrder.splice(srcIdx,1);ideaOrder.splice(dstIdx,0,idea.id);
     renderIdeas();
-  });
+  },{passive:false});
   // Touch swipe (only when not reordering)
   let startX=0,currentX=0,swiping=false;
   row.addEventListener('touchstart',e=>{if(reorderMode)return;startX=e.touches[0].clientX;swiping=false;},{passive:true});
