@@ -349,7 +349,7 @@
   </div>
   <div style="position:sticky;top:0;z-index:40;background:var(--bg);padding-bottom:4px;">
     <div style="padding:8px 20px 4px;">
-      <input class="add-inp" id="search-inp" placeholder="🔍  search your list..." oninput="searchIdeas(this.value)" style="width:100%;"/>
+      <input class="add-inp" id="search-inp" placeholder="🔍  search your list..." oninput="searchIdeas(this.value)" style="width:100%;font-size:13px;"/>
     </div>
     <div class="filter-row" style="padding-top:4px;">
       <button class="pill on" onclick="filterPill(this,'anything')">anything</button>
@@ -364,8 +364,8 @@
   <div class="idea-list" id="idea-list"></div>
   <div style="padding:10px 20px 14px;display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;gap:8px;">
-      <input class="add-inp" id="new-idea" placeholder="add a new idea..." onkeydown="if(event.key==='Enter')addIdea()" style="flex:1;"/>
-      <button class="add-btn" onclick="addIdea()">+ add</button>
+      <input class="add-inp" id="new-idea" placeholder="add a new idea..." onkeydown="if(event.key==='Enter')addIdea()" style="flex:1;min-width:0;"/>
+      <button class="add-btn" onclick="addIdea()" style="flex-shrink:0;white-space:nowrap;">+ add</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
       <span style="font-size:11px;color:var(--gray);margin-right:2px;">type:</span>
@@ -508,34 +508,11 @@
       <span class="btn-sub">suggest something from the group list</span>
     </button>
   </div>
-  <div style="position:sticky;top:0;z-index:40;background:var(--bg);padding-bottom:4px;">
-    <div style="padding:8px 20px 4px;">
-      <input class="add-inp" id="group-search-inp" placeholder="🔍  search group ideas..." oninput="searchGroupIdeas(this.value)" style="width:100%;"/>
-    </div>
-    <div class="filter-row" style="padding-top:4px;">
-      <button class="pill on" onclick="filterGroupPill(this,'anything')">anything</button>
-      <button class="pill" onclick="filterGroupPill(this,'solo')">solo</button>
-      <button class="pill" onclick="filterGroupPill(this,'group')">group</button>
-      <button class="pill" onclick="filterGroupPill(this,'productive')">productive</button>
-      <button class="pill" onclick="filterGroupPill(this,'outside')">outside</button>
-      <button class="pill" onclick="filterGroupPill(this,'free')">free</button>
-    </div>
-  </div>
   <div class="section-label">group ideas</div>
   <div class="idea-list" id="group-idea-list"></div>
-  <div style="padding:10px 20px 14px;display:flex;flex-direction:column;gap:8px;">
-    <div style="display:flex;gap:8px;">
-      <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()" style="flex:1;"/>
-      <button class="add-btn" onclick="addGroupIdea()">+ add</button>
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-      <span style="font-size:11px;color:var(--gray);margin-right:2px;">type:</span>
-      <button class="type-btn on" onclick="selectGroupType(this,'group')">group</button>
-      <button class="type-btn" onclick="selectGroupType(this,'solo')">solo</button>
-      <button class="type-btn" onclick="selectGroupType(this,'productive')">productive</button>
-      <button class="type-btn" onclick="selectGroupType(this,'outside')">outside</button>
-      <button class="type-btn" onclick="selectGroupType(this,'free')">free</button>
-    </div>
+  <div class="add-row">
+    <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()"/>
+    <button class="add-btn" onclick="addGroupIdea()">+ add</button>
   </div>
 </div>
 
@@ -850,7 +827,8 @@ function makeSwipeRow(idea){
   row.addEventListener('touchmove',e=>{
     currentX=e.touches[0].clientX;
     const dx=startX-currentX;
-    if(dx>8)swiping=true;
+    const dy=Math.abs(e.touches[0].clientY-(e.touches[0].clientY));
+    if(dx>20&&dx>5)swiping=true;
     if(swiping){
       const clamped=Math.max(-wrap.offsetWidth,Math.min(0,-dx));
       row.style.transform=`translateX(${clamped}px)`;
@@ -943,7 +921,8 @@ function makeGroupSwipeRow(idea,gid){
   row.addEventListener('touchmove',e=>{
     currentX=e.touches[0].clientX;
     const dx=startX-currentX;
-    if(dx>8)swiping=true;
+    const dy=Math.abs(e.touches[0].clientY-(e.touches[0].clientY));
+    if(dx>20&&dx>5)swiping=true;
     if(swiping){
       const clamped=Math.max(-wrap.offsetWidth,Math.min(0,-dx));
       row.style.transform=`translateX(${clamped}px)`;
