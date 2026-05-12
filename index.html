@@ -966,7 +966,14 @@ function showSug(idea){
   doneSugText=idea.text;currentDetailId=idea.id;doneSugRecurring=idea.recurring!==false;
 }
 // ── SPLASH ────────────────────────────────────────────────────────────────
-function hideSplash(){const s=document.getElementById('splash');if(!s)return;setTimeout(()=>{s.classList.add('hide');setTimeout(()=>s.remove(),700);},800);}
+function hideSplash(){
+  const s=document.getElementById('splash');if(!s||s._hidden)return;
+  s._hidden=true;
+  s.classList.add('hide');
+  setTimeout(()=>{if(s.parentNode)s.parentNode.removeChild(s);},700);
+}
+// Failsafe — always hide splash after 3.5s no matter what
+setTimeout(hideSplash, 3500);
 
 // ── HAPTICS ───────────────────────────────────────────────────────────────
 function haptic(type){try{if(navigator.vibrate){if(type==='press')navigator.vibrate(8);else if(type==='spring')navigator.vibrate([6,30,10]);else if(type==='success')navigator.vibrate([10,50,20,50,10]);}}catch(e){}}
