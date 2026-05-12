@@ -1022,7 +1022,7 @@ window.exitReorder=exitReorder;
 function getOnboardPreferences(selectedTexts){
   const cats={fun:0,productive:0,outside:0,solo:0,group:0};
   const funItems=['bowling with friends','try a new restaurant','movie night','game night','watch a documentary'];
-  const productiveItems=['deep clean my room','go to the gym','meal prep for the week','cook a recipe i've never tried','start reading a book'];
+  const productiveItems=['deep clean my room','go to the gym','meal prep for the week',"cook a recipe i've never tried",'start reading a book'];
   const outsideItems=['explore a new part of town','take a photography walk'];
   selectedTexts.forEach(t=>{
     if(funItems.includes(t))cats.fun++;
