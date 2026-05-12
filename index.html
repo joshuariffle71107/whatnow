@@ -262,9 +262,10 @@
 </div>
 
 <div id="splash"><div id="splash-logo">what now?</div><div id="splash-sub">your list for life's in-between moments</div></div>
+<div id="s-loading" class="screen active" style="background:var(--bg);"></div>
 
 <!-- SIGN IN -->
-<div id="s-signin" class="screen active">
+<div id="s-signin" class="screen">
   <div class="auth-wrap">
     <div class="auth-logo">what now?</div>
     <div class="auth-sub">welcome back</div>
@@ -659,7 +660,7 @@ function $(id){return document.getElementById(id);}
 function isValidUsername(u){return /^[a-zA-Z0-9_]{3,}$/.test(u);}
 
 const allTabs=['home','groups','someday','profile'];
-const noNavScreens=['s-signin','s-signup','s-onboard','s-suggest','s-detail','s-groupdetail','s-creategroup','s-groupideadetail','s-groupsettings'];
+const noNavScreens=['s-signin','s-signup','s-loading','s-onboard','s-suggest','s-detail','s-groupdetail','s-creategroup','s-groupideadetail','s-groupsettings'];
 
 function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>{
@@ -770,6 +771,8 @@ function celebrate(text){
 initDarkMode();
 
 onAuthStateChanged(auth,async user=>{
+  // remove the blank holding screen
+  const loading=$('s-loading');if(loading)loading.remove();
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
