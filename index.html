@@ -189,17 +189,6 @@
     .leave-btn{margin:8px 20px;background:none;border:0.5px solid #E24B4A;border-radius:12px;padding:11px;width:calc(100% - 40px);font-size:13px;color:#E24B4A;cursor:pointer;font-family:inherit;}
 
 
-    /* REORDER MODE */
-    .reorder-banner{display:none;background:var(--coral);padding:10px 20px;font-size:13px;color:#fff;font-weight:600;text-align:center;position:sticky;top:0;z-index:50;}
-    .reorder-banner.show{display:block;}
-    .reorder-banner button{background:rgba(255,255,255,0.25);border:none;border-radius:8px;color:#fff;font-size:12px;padding:4px 12px;margin-left:10px;cursor:pointer;font-family:inherit;font-weight:600;}
-    .drag-handle{width:24px;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;cursor:grab;flex-shrink:0;opacity:0;transition:opacity .2s;padding:4px;}
-    .drag-handle span{display:block;width:14px;height:2px;background:var(--gray);border-radius:2px;}
-    body.reordering .drag-handle{opacity:1;}
-    body.reordering .idea-row{cursor:grab;}
-    body.reordering .swipe-wrap{overflow:visible;}
-    .idea-row.dragging{opacity:0.4;border:1.5px dashed var(--coral);}
-    .idea-row.drag-over{border-color:var(--coral);background:var(--coral-light);}
 
     /* SOMEDAY */
     .someday-note{font-size:11px;color:var(--gray);font-style:italic;margin-top:2px;}
@@ -370,7 +359,6 @@
     <button class="pill" onclick="filterPill(this,'outside')">outside</button>
     <button class="pill" onclick="filterPill(this,'free')">free</button>
   </div>
-  <div class="reorder-banner" id="reorder-banner">hold & drag to reorder<button onclick="exitReorder()">done</button></div>
   <div class="section-label">your list</div>
   <div class="idea-list" id="idea-list"></div>
   <div class="add-row">
@@ -806,7 +794,7 @@ window.toggleOnboard=toggleOnboard;
 async function finishOnboard(){
   const selected=document.querySelectorAll('.onboard-opt.on');const batch=[];
   const selectedTexts=[];
-  selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;selectedTexts.push(text);const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false,order:selectedTexts.length-1}));});
+  selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;selectedTexts.push(text);const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false}));});
   const prefs=getOnboardPreferences(selectedTexts);
   await Promise.all(batch);await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true,prefs});
   setupListeners();$('main-nav').style.display='flex';goTo('s-home');
@@ -822,44 +810,19 @@ function makeSwipeRow(idea){
   // age bar
   const level=ageLevel(idea.dateAdded);
   const bar=document.createElement('div');bar.className='age-bar';bar.style.background=ageBorderColors[level];row.appendChild(bar);
-  // drag handle (visible in reorder mode)
-  const handle=document.createElement('div');handle.className='drag-handle';handle.innerHTML='<span></span><span></span><span></span>';row.appendChild(handle);
+
   const dot=document.createElement('div');dot.className='idea-dot';dot.style.background=tagColors[idea.tag]||GRAY;row.appendChild(dot);
   const info=document.createElement('div');info.className='idea-info';
   info.innerHTML=`<div class="idea-text">${idea.text}</div><div class="idea-age">${ageText(idea.dateAdded)}${level>=2?' · been a while!':''}</div>`;
   row.appendChild(info);
   const tag=document.createElement('span');tag.className=`idea-tag ${tagClasses[idea.tag]||'tag-solo'}`;tag.textContent=idea.tag;row.appendChild(tag);
-  // Long press to enter reorder
-  let pressTimer=null;
-  row.addEventListener('touchstart',e=>{
-    if(reorderMode)return;
-    pressTimer=setTimeout(()=>{haptic('press');enterReorder();},500);
-  },{passive:true});
-  row.addEventListener('touchend',()=>{clearTimeout(pressTimer);});
-  row.addEventListener('touchmove',()=>{clearTimeout(pressTimer);},{passive:true});
-  row.onclick=()=>{if(!reorderMode)openDetail(idea.id);};
-  // Touch drag for reorder
-  row.addEventListener('touchmove',e=>{
-    if(!reorderMode)return;
-    e.preventDefault();
-    const touch=e.touches[0];
-    const el=document.elementFromPoint(touch.clientX,touch.clientY);
-    if(!el)return;
-    const targetRow=el.closest('.idea-row');
-    if(!targetRow||targetRow===row)return;
-    const targetId=targetRow.dataset.id;
-    if(!targetId||targetId===idea.id)return;
-    const srcIdx=ideaOrder.indexOf(idea.id);
-    const dstIdx=ideaOrder.indexOf(targetId);
-    if(srcIdx<0||dstIdx<0)return;
-    ideaOrder.splice(srcIdx,1);ideaOrder.splice(dstIdx,0,idea.id);
-    renderIdeas();
-  },{passive:false});
+  row.onclick=()=>openDetail(idea.id);
+
   // Touch swipe (only when not reordering)
   let startX=0,currentX=0,swiping=false;
-  row.addEventListener('touchstart',e=>{if(reorderMode)return;startX=e.touches[0].clientX;swiping=false;},{passive:true});
-  row.addEventListener('touchmove',e=>{if(reorderMode)return;currentX=e.touches[0].clientX;const dx=startX-currentX;if(dx>10)swiping=true;if(swiping){row.style.transform=`translateX(${Math.max(-72,Math.min(0,-dx))}px)`;del.style.opacity=Math.min(1,dx/72);}},{passive:true});
-  row.addEventListener('touchend',()=>{if(reorderMode)return;if(swiping){const dx=startX-currentX;if(dx>50){row.style.transform='translateX(-72px)';del.style.opacity='1';}else{row.style.transform='';del.style.opacity='0';}}swiping=false;});
+  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;swiping=false;},{passive:true});
+  row.addEventListener('touchmove',e=>{currentX=e.touches[0].clientX;const dx=startX-currentX;if(dx>10)swiping=true;if(swiping){row.style.transform=`translateX(${Math.max(-72,Math.min(0,-dx))}px)`;del.style.opacity=Math.min(1,dx/72);}},{passive:true});
+  row.addEventListener('touchend',()=>{if(swiping){const dx=startX-currentX;if(dx>50){row.style.transform='translateX(-72px)';del.style.opacity='1';}else{row.style.transform='';del.style.opacity='0';}}swiping=false;});
   wrap.appendChild(del);wrap.appendChild(row);return wrap;
 }
 
@@ -867,15 +830,12 @@ function renderIdeas(){
   const el=$('idea-list');if(!el)return;
   let active=ideas.filter(i=>currentFilter==='anything'||i.tag===currentFilter);
   if(searchQuery)active=active.filter(i=>i.text.toLowerCase().includes(searchQuery));
-  // sort by order field if set
-  active.sort((a,b)=>(a.order??999)-(b.order??999));
   if(!active.length){
     el.innerHTML=searchQuery?'<div class="empty">no ideas match that search.</div>':'<div class="empty">your list is empty!<br>add some ideas below 👇</div>';
     return;
   }
   el.innerHTML='';
   active.forEach(idea=>el.appendChild(makeSwipeRow(idea)));
-  ideaOrder=active.map(i=>i.id);
 }
 
 function renderGroups(){
@@ -1014,20 +974,7 @@ function getEnergyTags(energy){
 }
 
 // ── REORDER ───────────────────────────────────────────────────────────────
-let reorderMode=false,dragSrcId=null,ideaOrder=[];
-function enterReorder(){
-  reorderMode=true;document.body.classList.add('reordering');
-  document.getElementById('reorder-banner').classList.add('show');
-  renderIdeas();haptic('press');
-}
-function exitReorder(){
-  reorderMode=false;document.body.classList.remove('reordering');
-  document.getElementById('reorder-banner').classList.remove('show');
-  // save order to firebase
-  if(ideaOrder.length){ideaOrder.forEach((id,i)=>{const idea=ideas.find(x=>x.id===id);if(idea)updateDoc(doc(db,'ideas',id),{order:i});});}
-  renderIdeas();
-}
-window.exitReorder=exitReorder;
+
 
 // ── ONBOARDING LEARNING ───────────────────────────────────────────────────
 function getOnboardPreferences(selectedTexts){
