@@ -1373,8 +1373,73 @@ function showNudge(){
   if(!$('home-handle'))return;
   $('home-handle').textContent=currentUsername?`@${currentUsername}`:'';
   const el=$('nudge-wrap');
-  if(Math.random()<0.3)el.innerHTML=`<div class="nudge">${nudges[Math.floor(Math.random()*nudges.length)]}</div>`;
+  const msg=getSmartNudge();
+  if(msg)el.innerHTML=`<div class="nudge">${msg}</div>`;
   else el.innerHTML='';
+}
+
+function getSmartNudge(){
+  const now=new Date();
+  const day=now.getDay(); // 0=sun,1=mon...6=sat
+  const hour=now.getHours();
+  const dayNames=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const todayName=dayNames[day];
+  const isWeekend=(day===0||day===6);
+  const isFriday=day===5;
+  const isEvening=hour>=17;
+  const isAfternoon=hour>=12&&hour<17;
+  const isMorning=hour>=6&&hour<12;
+
+  const activeIdeas=ideas.filter(i=>!i.isDone&&!i.isSomeday);
+  const hasSomeday=somedays.length>0;
+
+  // find most recently done idea
+  const doneDates=activeIdeas.filter(i=>i.lastDone).map(i=>i.lastDone?.toDate?i.lastDone.toDate():new Date(i.lastDone));
+  const lastDoneDate=doneDates.length?new Date(Math.max(...doneDates)):null;
+  const daysSinceLastDone=lastDoneDate?Math.floor((Date.now()-lastDoneDate)/864e5):999;
+
+  // find oldest idea
+  const oldestIdea=activeIdeas.reduce((oldest,i)=>{
+    if(!i.dateAdded)return oldest;
+    const d=i.dateAdded?.toDate?i.dateAdded.toDate():new Date(i.dateAdded);
+    return(!oldest||d<oldest.date)?{idea:i,date:d}:oldest;
+  },null);
+  const oldestDays=oldestIdea?Math.floor((Date.now()-oldestIdea.date)/864e5):0;
+
+  const candidates=[];
+
+  // day-specific
+  if(isFriday&&isEvening)candidates.push("it's friday night. what now? 👀");
+  if(isFriday&&isAfternoon)candidates.push("almost the weekend. your list is ready when you are.");
+  if(isWeekend&&isMorning)candidates.push(`happy ${todayName}. good day to do something from your list.`);
+  if(isWeekend&&isAfternoon)candidates.push(`${todayName} afternoon — your list has some thoughts.`);
+  if(isWeekend&&isEvening)candidates.push(`${todayName} evening. still time to do something.`);
+  if(day===1&&isMorning)candidates.push("new week. good time to look at your list.");
+
+  // based on actual activity
+  if(daysSinceLastDone===0)candidates.push("nice, you got something done today. what else you got? 👀");
+  if(daysSinceLastDone===1)candidates.push("you did something yesterday. keeping the streak going?");
+  if(daysSinceLastDone>=7&&daysSinceLastDone<30)candidates.push(`it's been ${daysSinceLastDone} days since you did something from your list.`);
+  if(daysSinceLastDone>=30)candidates.push("been a while since you checked anything off. no pressure though.");
+
+  // based on list age
+  if(oldestDays>=30&&oldestIdea)candidates.push(`"${oldestIdea.idea.text}" has been on your list for ${Math.floor(oldestDays/7)} weeks.`);
+  if(oldestDays>=14&&oldestIdea&&oldestDays<30)candidates.push(`"${oldestIdea.idea.text}" has been sitting there for a while.`);
+
+  // someday list
+  if(hasSomeday&&Math.random()<0.4)candidates.push(`you have ${somedays.length} thing${somedays.length>1?'s':''} on your someday list. maybe today's the day for one of them.`);
+
+  // list size
+  if(activeIdeas.length===0)candidates.push("your list is empty. add some ideas and hit what now.");
+  if(activeIdeas.length>=10)candidates.push(`you've got ${activeIdeas.length} ideas on your list. one of them is perfect for right now.`);
+
+  // time of day generic
+  if(isEvening&&candidates.length===0)candidates.push("evening's a good time to do something. just saying.");
+  if(isAfternoon&&candidates.length===0)candidates.push("afternoon slump? your list has a cure.");
+
+  if(!candidates.length)return null;
+  // pick one randomly from relevant candidates
+  return candidates[Math.floor(Math.random()*candidates.length)];
 }
 </script>
 
