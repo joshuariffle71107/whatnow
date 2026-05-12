@@ -807,7 +807,7 @@ window.finishOnboard=finishOnboard;
 function makeSwipeRow(idea){
   const wrap=document.createElement('div');wrap.className='swipe-wrap';
   const del=document.createElement('div');del.className='swipe-delete';del.innerHTML='<span class="swipe-delete-icon">🗑</span>';
-  del.onclick=async()=>{if(confirm(`remove "${idea.text}"?`)){await deleteDoc(doc(db,'ideas',idea.id));}};
+  // swipe fully left to delete — no button tap needed
   const row=document.createElement('div');row.className='idea-row';row.dataset.id=idea.id;
   // age bar
   const level=ageLevel(idea.dateAdded);
@@ -820,11 +820,43 @@ function makeSwipeRow(idea){
   const tag=document.createElement('span');tag.className=`idea-tag ${tagClasses[idea.tag]||'tag-solo'}`;tag.textContent=idea.tag;row.appendChild(tag);
   row.onclick=()=>openDetail(idea.id);
 
-  // Touch swipe (only when not reordering)
+  // Touch swipe — full swipe left to delete, partial bounces back
   let startX=0,currentX=0,swiping=false;
-  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;swiping=false;},{passive:true});
-  row.addEventListener('touchmove',e=>{currentX=e.touches[0].clientX;const dx=startX-currentX;if(dx>10)swiping=true;if(swiping){row.style.transform=`translateX(${Math.max(-72,Math.min(0,-dx))}px)`;del.style.opacity=Math.min(1,dx/72);}},{passive:true});
-  row.addEventListener('touchend',()=>{if(swiping){const dx=startX-currentX;if(dx>50){row.style.transform='translateX(-72px)';del.style.opacity='1';}else{row.style.transform='';del.style.opacity='0';}}swiping=false;});
+  const SNAP=72,FULL=200;
+  row.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;currentX=startX;swiping=false;row.style.transition='none';},{passive:true});
+  row.addEventListener('touchmove',e=>{
+    currentX=e.touches[0].clientX;
+    const dx=startX-currentX;
+    if(dx>8)swiping=true;
+    if(swiping){
+      const clamped=Math.max(-wrap.offsetWidth,Math.min(0,-dx));
+      row.style.transform=`translateX(${clamped}px)`;
+      del.style.opacity=Math.min(1,dx/SNAP);
+      del.style.width=Math.min(wrap.offsetWidth,Math.max(72,dx))+'px';
+    }
+  },{passive:true});
+  row.addEventListener('touchend',async()=>{
+    if(!swiping){return;}
+    swiping=false;
+    const dx=startX-currentX;
+    row.style.transition='transform .3s cubic-bezier(0.25,1,0.5,1)';
+    del.style.transition='opacity .3s,width .3s';
+    if(dx>FULL){
+      // full swipe — delete immediately
+      row.style.transform=`translateX(-${wrap.offsetWidth}px)`;
+      wrap.style.transition='height .3s ease,opacity .3s ease';
+      wrap.style.overflow='hidden';
+      setTimeout(async()=>{
+        wrap.style.height='0';wrap.style.opacity='0';
+        await deleteDoc(doc(db,'ideas',idea.id));
+      },100);
+    } else {
+      // partial — bounce back
+      row.style.transform='translateX(0)';
+      del.style.opacity='0';
+      del.style.width='72px';
+    }
+  });
   wrap.appendChild(del);wrap.appendChild(row);return wrap;
 }
 
