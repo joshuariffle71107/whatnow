@@ -324,7 +324,7 @@
 </div>
 
 <div id="splash"><div id="splash-logo">what now?</div><div id="splash-sub">your list for life's in-between moments</div></div>
-<div id="s-loading" class="screen active" style="background:var(--bg);"></div>
+<div id="s-loading" class="screen active" style="background:#B8432F;position:fixed;inset:0;z-index:9998;"></div>
 
 <!-- SIGN IN -->
 <div id="s-signin" class="screen">
@@ -438,6 +438,12 @@
       <button class="type-btn" onclick="selectType(this,'outside')">outside</button>
       <button class="type-btn" onclick="selectType(this,'free')">free</button>
     </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:var(--gray);margin-right:2px;">energy:</span>
+      <button class="type-btn" onclick="selectEnergy(this,'low')">😴 low</button>
+      <button class="type-btn on" onclick="selectEnergy(this,'medium')">😊 medium</button>
+      <button class="type-btn" onclick="selectEnergy(this,'high')">⚡ high</button>
+    </div>
   </div>
 </div>
 
@@ -491,6 +497,14 @@
     <div style="display:flex;gap:7px;flex-wrap:wrap;" id="detail-type-pills"></div>
   </div>
   <div class="detail-row"><span class="detail-label">added</span><span class="detail-val" id="detail-added"></span></div>
+  <div class="detail-row">
+    <span class="detail-label">energy level</span>
+    <div style="display:flex;gap:6px;" id="detail-energy-pills">
+      <button class="type-btn" onclick="selectDetailEnergy(this,'low')">😴 low</button>
+      <button class="type-btn" onclick="selectDetailEnergy(this,'medium')">😊 medium</button>
+      <button class="type-btn" onclick="selectDetailEnergy(this,'high')">⚡ high</button>
+    </div>
+  </div>
   <div class="detail-row">
     <span class="detail-label">recurring</span>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
@@ -1088,8 +1102,17 @@ async function loadUserPrefs(){
 
 function getPool(){
   let pool=[...ideas];
-  const energyTags=getEnergyTags(currentEnergy);
-  if(energyTags){const filtered=pool.filter(i=>energyTags.includes(i.tag));if(filtered.length)pool=filtered;}
+  // filter by idea's own energy field if set, otherwise fall back to tag-based guess
+  if(currentEnergy!=='medium'){
+    const byEnergy=pool.filter(i=>{
+      if(i.energy)return i.energy===currentEnergy;
+      // fallback: guess from tag
+      if(currentEnergy==='low')return['solo','free','productive'].includes(i.tag);
+      if(currentEnergy==='high')return['group','outside'].includes(i.tag);
+      return true;
+    });
+    if(byEnergy.length)pool=byEnergy;
+  }
   // Weight by user prefs — ideas matching preferred categories appear more often
   if(userPrefs&&pool.length>1){
     const weighted=[];
@@ -1210,13 +1233,37 @@ window.energyPick=energyPick;
 function filterPill(el,f){document.querySelectorAll('.filter-row .pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');currentFilter=f;renderIdeas();}
 window.filterPill=filterPill;
 
-function selectType(el,type){document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');selectedType=type;}
+function selectType(el,type){
+  // only toggle within same row
+  el.closest('div').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');selectedType=type;
+}
 window.selectType=selectType;
+
+let selectedEnergyLevel='medium';
+function selectEnergy(el,level){
+  el.closest('div').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');selectedEnergyLevel=level;
+}
+window.selectEnergy=selectEnergy;
+
+function selectDetailEnergy(el,level){
+  document.querySelectorAll('#detail-energy-pills .type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+window.selectDetailEnergy=selectDetailEnergy;
 
 async function addIdea(){
   const inp=$('new-idea');const val=inp.value.trim();if(!val)return;
-  await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,tag:selectedType,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});
-  inp.value='';document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));document.querySelector('.type-btn').classList.add('on');selectedType='solo';
+  await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,tag:selectedType,energy:selectedEnergyLevel,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});
+  inp.value='';
+  // reset type picker
+  const typeBtns=document.querySelectorAll('#s-home .type-btn');
+  typeBtns.forEach(b=>b.classList.remove('on'));
+  // reset to defaults
+  document.querySelector('#s-home [onclick*="selectType"][onclick*="solo"]').classList.add('on');
+  document.querySelector('#s-home [onclick*="selectEnergy"][onclick*="medium"]').classList.add('on');
+  selectedType='solo';selectedEnergyLevel='medium';
 }
 window.addIdea=addIdea;
 
@@ -1241,6 +1288,12 @@ function openDetail(id){
   $('detail-added').textContent=ageText(idea.dateAdded);
   const tp=$('detail-type-pills');tp.innerHTML='';
   ['solo','group','productive','outside','free'].forEach(t=>{const b=document.createElement('button');b.className='type-btn'+(idea.tag===t?' on':'');b.textContent=t;b.onclick=()=>{document.querySelectorAll('#detail-type-pills .type-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');};tp.appendChild(b);});
+  // energy pills
+  const ep=document.querySelectorAll('#detail-energy-pills .type-btn');
+  ep.forEach(b=>b.classList.remove('on'));
+  const ideaEnergy=idea.energy||'medium';
+  const epBtn=document.querySelector(`#detail-energy-pills .type-btn[onclick*="${ideaEnergy}"]`);
+  if(epBtn)epBtn.classList.add('on');
   const rec=idea.recurring!==false;const tog=$('recurring-toggle');tog.classList.toggle('on',rec);tog.querySelector('.toggle-knob').style.left=rec?'20px':'2px';$('recurring-label').textContent=rec?'stays on list after done':'removed after done';
   $('detail-reminder').value=idea.reminder||'';$('detail-repeat').value=idea.repeat||'none';$('detail-location').value=idea.location||'';$('detail-expires').value=idea.expires||'';
   const pt=$('priv-toggle');pt.classList.toggle('on',!!idea.isPrivate);pt.querySelector('.toggle-knob').style.left=idea.isPrivate?'20px':'2px';
@@ -1250,8 +1303,10 @@ function openDetail(id){
 async function saveDetail(){
   if(!currentDetailId)return;
   const newTag=document.querySelector('#detail-type-pills .type-btn.on')?.textContent||'solo';
+  const activeEnergyBtn=document.querySelector('#detail-energy-pills .type-btn.on');
+  const newEnergy=activeEnergyBtn?(['low','medium','high'].find(e=>activeEnergyBtn.getAttribute('onclick').includes(e))||'medium'):'medium';
   const recurring=$('recurring-toggle').classList.contains('on');
-  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});
+  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,energy:newEnergy,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});
   goTo('s-home');
 }
 window.saveDetail=saveDetail;
