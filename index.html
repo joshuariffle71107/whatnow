@@ -913,6 +913,7 @@ onAuthStateChanged(auth,async user=>{
 
 function setupListeners(){
   loadUserPrefs();
+  const de=localStorage.getItem('wn-default-energy');if(de)currentEnergy=de;
   if(unsubIdeas)unsubIdeas();if(unsubSomedays)unsubSomedays();if(unsubGroups)unsubGroups();
   const uid=currentUser.uid;
   unsubIdeas=onSnapshot(query(collection(db,'ideas'),where('userId','==',uid),where('isDone','==',false),where('isSomeday','==',false)),snap=>{ideas=snap.docs.map(d=>({id:d.id,...d.data()}));renderIdeas();});
@@ -1152,15 +1153,98 @@ function renderGroupDetail(gid){
   (g.usernames||[]).forEach(u=>{const row=document.createElement('div');row.className='member-row';row.innerHTML=`<div class="avatar" style="margin-right:8px;">${u.slice(0,2).toUpperCase()}</div><span>@${u}</span>`;membersEl.appendChild(row);});
 }
 
-function renderProfile(){
+
+// ── PROFILE & SETTINGS ────────────────────────────────────────────────────
+async function renderProfile(){
   if(!currentUser)return;
   $('profile-avatar').textContent=currentUsername?currentUsername.slice(0,2).toUpperCase():'?';
   $('profile-username-display').textContent=`@${currentUsername}`;
   $('profile-email-display').textContent=currentUser.email;
   $('pr-username-val').textContent=`@${currentUsername}`;
   $('pr-email-val').textContent=currentUser.email;
+  updateDarkModeVal();
   closeEditField();
+
+  // nudge freq
+  const nf=localStorage.getItem('wn-nudge')||'sometimes';
+  $('nudge-freq-val').textContent=nf;
+
+  // default energy
+  const de=localStorage.getItem('wn-default-energy')||'medium';
+  $('default-energy-val').textContent=de;
+
+  // stats
+  try{
+    const uid=currentUser.uid;
+    // total ideas ever added (active + done)
+    const allSnap=await getDocs(query(collection(db,'ideas'),where('userId','==',uid)));
+    const allIdeas=allSnap.docs.map(d=>d.data());
+    $('stat-total').textContent=allIdeas.length;
+    const doneCount=allIdeas.filter(i=>i.isDone).length;
+    $('stat-done').textContent=doneCount;
+    // top category
+    const tagCounts={};
+    allIdeas.forEach(i=>{if(i.tag)tagCounts[i.tag]=(tagCounts[i.tag]||0)+1;});
+    const topTag=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1])[0];
+    $('stat-fav').textContent=topTag?topTag[0]:'—';
+  }catch(e){}
 }
+
+function shareApp(){
+  const url=window.location.origin;
+  const text='check out what now? — an app that helps you actually do the things on your list.';
+  if(navigator.share){navigator.share({title:'What Now?',text,url}).catch(()=>{});}
+  else{navigator.clipboard.writeText(url).then(()=>alert('link copied!')).catch(()=>alert(url));}
+}
+window.shareApp=shareApp;
+
+function openFeedback(){
+  window.open('mailto:feedback@whatnow.app?subject=What Now? Feedback','_blank');
+}
+window.openFeedback=openFeedback;
+
+async function clearDoneHistory(){
+  if(!confirm('this will permanently delete all your completed ideas. your active list stays the same. continue?'))return;
+  try{
+    const uid=currentUser.uid;
+    const doneSnap=await getDocs(query(collection(db,'ideas'),where('userId','==',uid),where('isDone','==',true)));
+    const deletes=doneSnap.docs.map(d=>deleteDoc(doc(db,'ideas',d.id)));
+    await Promise.all(deletes);
+    alert('done history cleared.');
+    renderProfile();
+  }catch(e){alert('something went wrong. try again.');}
+}
+window.clearDoneHistory=clearDoneHistory;
+
+async function deleteAccount(){
+  if(!confirm('are you sure? this will permanently delete your account, all your ideas, and remove you from all groups. this cannot be undone.'))return;
+  if(!confirm('last chance — really delete everything?'))return;
+  try{
+    const uid=currentUser.uid;
+    // delete all ideas
+    const ideasSnap=await getDocs(query(collection(db,'ideas'),where('userId','==',uid)));
+    await Promise.all(ideasSnap.docs.map(d=>deleteDoc(doc(db,'ideas',d.id))));
+    // leave all groups
+    for(const g of groups){
+      const newMembers=(g.members||[]).filter(m=>m!==uid);
+      const newUsernames=(g.usernames||[]).filter(u=>u!==currentUsername);
+      if(newMembers.length===0){await deleteDoc(doc(db,'groups',g.id));}
+      else{await updateDoc(doc(db,'groups',g.id),{members:newMembers,usernames:newUsernames});}
+    }
+    // delete user doc and username
+    await deleteDoc(doc(db,'users',uid));
+    if(currentUsername)await deleteDoc(doc(db,'usernames',currentUsername));
+    // delete auth account
+    await auth.currentUser.delete();
+  }catch(e){
+    if(e.code==='auth/requires-recent-login'){
+      alert('for security, please sign out and sign back in before deleting your account.');
+    } else {alert('something went wrong: '+e.message);}
+  }
+}
+window.deleteAccount=deleteAccount;
+
+
 
 let userPrefs=null;
 async function loadUserPrefs(){
@@ -1589,6 +1673,16 @@ function openEditField(type){
   if(type==='username'){$('edit-label').textContent='new username';$('edit-username-wrap').style.display='block';$('edit-username-inp').value=currentUsername;$('edit-username-status').textContent='';setTimeout(()=>$('edit-username-inp').focus(),100);}
   else if(type==='email'){$('edit-label').textContent='new email';const inp=$('edit-generic-inp');inp.type='email';inp.placeholder='new email';inp.value=currentUser.email;inp.style.display='block';setTimeout(()=>inp.focus(),100);}
   else if(type==='password'){$('edit-label').textContent='new password';const inp=$('edit-generic-inp');inp.type='password';inp.placeholder='new password (min 6 chars)';inp.value='';inp.style.display='block';setTimeout(()=>inp.focus(),100);}
+  else if(type==='nudge'){
+    $('edit-label').textContent='nudge frequency';
+    const inp=$('edit-generic-inp');inp.type='text';inp.placeholder='always, sometimes, or never';
+    inp.value=localStorage.getItem('wn-nudge')||'sometimes';inp.style.display='block';setTimeout(()=>inp.focus(),100);
+  }
+  else if(type==='defaultenergy'){
+    $('edit-label').textContent='default energy level';
+    const inp=$('edit-generic-inp');inp.type='text';inp.placeholder='low, medium, or high';
+    inp.value=localStorage.getItem('wn-default-energy')||'medium';inp.style.display='block';setTimeout(()=>inp.focus(),100);
+  }
   $('edit-area').classList.add('open');
 }
 window.openEditField=openEditField;
@@ -1610,6 +1704,16 @@ async function saveEditField(){
     if(editFieldType==='username'){const val=$('edit-username-inp').value.trim();if(!val){$('edit-err').textContent='username cannot be empty';return;}if(!isValidUsername(val)){$('edit-err').textContent='letters, numbers, underscores only (min 3)';return;}if(val===currentUsername){$('edit-err').textContent='that\'s already your username';return;}const taken=await getDocs(query(collection(db,'users'),where('username','==',val)));if(!taken.empty){$('edit-err').textContent='that username is taken';return;}await deleteDoc(doc(db,'usernames',currentUsername));await setDoc(doc(db,'usernames',val),{uid:currentUser.uid});await updateDoc(doc(db,'users',currentUser.uid),{username:val});currentUsername=val;$('edit-ok').textContent='username updated!';setTimeout(()=>renderProfile(),1200);}
     else if(editFieldType==='email'){const val=$('edit-generic-inp').value.trim();if(!val){$('edit-err').textContent='email cannot be empty';return;}await updateEmail(auth.currentUser,val);await updateDoc(doc(db,'users',currentUser.uid),{email:val});$('edit-ok').textContent='email updated!';setTimeout(()=>renderProfile(),1200);}
     else if(editFieldType==='password'){const val=$('edit-generic-inp').value;if(val.length<6){$('edit-err').textContent='password must be at least 6 characters';return;}await updatePassword(auth.currentUser,val);$('edit-ok').textContent='password updated!';setTimeout(()=>closeEditField(),1200);}
+    else if(editFieldType==='nudge'){
+      const val=$('edit-generic-inp').value.trim().toLowerCase();
+      if(!['always','sometimes','never'].includes(val)){$('edit-err').textContent='enter: always, sometimes, or never';return;}
+      localStorage.setItem('wn-nudge',val);$('nudge-freq-val').textContent=val;$('edit-ok').textContent='saved!';setTimeout(()=>closeEditField(),1000);
+    }
+    else if(editFieldType==='defaultenergy'){
+      const val=$('edit-generic-inp').value.trim().toLowerCase();
+      if(!['low','medium','high'].includes(val)){$('edit-err').textContent='enter: low, medium, or high';return;}
+      localStorage.setItem('wn-default-energy',val);$('default-energy-val').textContent=val;currentEnergy=val;$('edit-ok').textContent='saved!';setTimeout(()=>closeEditField(),1000);
+    }
   }catch(e){$('edit-err').textContent=friendlyError(e.code);}
 }
 window.saveEditField=saveEditField;
@@ -1618,8 +1722,11 @@ function showNudge(){
   if(!$('home-handle'))return;
   $('home-handle').textContent=currentUsername?`@${currentUsername}`:'';
   const el=$('nudge-wrap');
+  const freq=localStorage.getItem('wn-nudge')||'sometimes';
+  if(freq==='never'){el.innerHTML='';return;}
+  const chance=freq==='always'?1:0.3;
   const msg=getSmartNudge();
-  if(msg)el.innerHTML=`<div class="nudge">${msg}</div>`;
+  if(msg&&Math.random()<chance)el.innerHTML=`<div class="nudge">${msg}</div>`;
   else el.innerHTML='';
 }
 
