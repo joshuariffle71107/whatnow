@@ -28,7 +28,7 @@
 
 
     /* SCREENS */
-    .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;padding-bottom:80px;background:var(--bg);will-change:opacity,transform;}
+    .screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;overflow-x:hidden;padding-bottom:80px;background:var(--bg);will-change:opacity,transform;-webkit-overflow-scrolling:touch;}
     .screen.active{display:flex;}
 
     /* NAV */
@@ -323,7 +323,7 @@
 
     /* PROFILE */
     .profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 10px;letter-spacing:1px;}
-    .profile-section{margin:0 20px;background:var(--card);border-radius:16px;overflow:hidden;border:0.5px solid var(--gray3);}
+    .profile-section{margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);}
     .profile-section+.section-label{margin-top:20px;}
     .edit-area+.section-label{margin-top:20px;}
     .profile-section+.edit-area{margin-top:8px;}
@@ -748,7 +748,7 @@
 
   <!-- Account -->
   <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:0 20px 8px;">account</div>
-  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);">
     <div onclick="openEditField('username')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
       <span style="font-size:14px;color:var(--text);">username</span>
       <div style="display:flex;align-items:center;gap:6px;"><span id="pr-username-val" style="font-size:13px;color:var(--gray);"></span><span style="color:var(--gray);font-size:18px;">›</span></div>
@@ -781,7 +781,7 @@
 
   <!-- Preferences -->
   <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">preferences</div>
-  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);">
     <div onclick="toggleDarkMode()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
       <span style="font-size:14px;color:var(--text);">dark mode</span>
       <div style="display:flex;align-items:center;gap:6px;"><span id="dark-mode-val" style="font-size:13px;color:var(--gray);">auto</span><span style="color:var(--gray);font-size:18px;">›</span></div>
@@ -798,7 +798,7 @@
 
   <!-- Spread the word -->
   <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">spread the word</div>
-  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);">
     <div onclick="shareApp()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
       <span style="font-size:14px;color:var(--text);">share what now?</span>
       <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--gray);">invite friends</span><span style="color:var(--gray);font-size:18px;">›</span></div>
@@ -807,7 +807,7 @@
 
   <!-- About -->
   <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">about</div>
-  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);">
       <span style="font-size:14px;color:var(--text);">version</span>
       <span style="font-size:13px;color:var(--gray);">1.0.0</span>
@@ -820,7 +820,7 @@
 
   <!-- Danger zone -->
   <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">danger zone</div>
-  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);">
     <div onclick="clearDoneHistory()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
       <span style="font-size:14px;color:#E24B4A;">clear done history</span>
       <span style="color:var(--gray);font-size:18px;">›</span>
