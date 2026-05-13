@@ -1244,6 +1244,9 @@ function renderGroupDetail(gid){
 
 
 // ── PROFILE & SETTINGS ────────────────────────────────────────────────────
+async 
+
+
 async function renderProfile(){
   if(!currentUser)return;
   $('profile-avatar').textContent=currentUsername?currentUsername.slice(0,2).toUpperCase():'?';
@@ -1253,30 +1256,22 @@ async function renderProfile(){
   $('pr-email-val').textContent=currentUser.email;
   updateDarkModeVal();
   closeEditField();
-
-  // nudge freq
   const nf=localStorage.getItem('wn-nudge')||'sometimes';
-  $('nudge-freq-val').textContent=nf;
-
-  // default energy
+  const nfEl=$('nudge-freq-val');if(nfEl)nfEl.textContent=nf;
   const de=localStorage.getItem('wn-default-energy')||'medium';
-  $('default-energy-val').textContent=de;
-
-  // stats
+  const deEl=$('default-energy-val');if(deEl)deEl.textContent=de;
   try{
     const uid=currentUser.uid;
-    // total ideas ever added (active + done)
     const allSnap=await getDocs(query(collection(db,'ideas'),where('userId','==',uid)));
     const allIdeas=allSnap.docs.map(d=>d.data());
-    $('stat-total').textContent=allIdeas.length;
+    const totalEl=$('stat-total');if(totalEl)totalEl.textContent=allIdeas.length;
     const doneCount=allIdeas.filter(i=>i.isDone).length;
-    $('stat-done').textContent=doneCount;
-    // top category
+    const doneEl=$('stat-done');if(doneEl)doneEl.textContent=doneCount;
     const tagCounts={};
     allIdeas.forEach(i=>{if(i.tag)tagCounts[i.tag]=(tagCounts[i.tag]||0)+1;});
     const topTag=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1])[0];
-    $('stat-fav').textContent=topTag?topTag[0]:'—';
-  }catch(e){}
+    const favEl=$('stat-fav');if(favEl)favEl.textContent=topTag?topTag[0]:'—';
+  }catch(e){console.error('stats error',e);}
 }
 
 function shareApp(){
