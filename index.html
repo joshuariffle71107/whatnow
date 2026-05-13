@@ -611,8 +611,15 @@
     <div style="font-size:24px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;" id="gd-name"></div>
     <div style="font-size:13px;color:var(--gray);margin-top:2px;" id="gd-meta"></div>
   </div>
-  <div style="padding:0 20px 16px;">
-    <button class="the-btn" style="box-shadow:0 4px 14px rgba(184,67,47,0.28);" onclick="goSuggestGroup()">
+  <div style="padding:0 20px 16px;position:relative;">
+    <div style="background:var(--coral-dark);border-radius:20px;position:absolute;bottom:8px;left:20px;right:20px;top:0;z-index:0;"></div>
+    <button class="the-btn" id="groupBtn" style="box-shadow:0 4px 14px rgba(184,67,47,0.28);"
+      onmousedown="groupBtnDown()"
+      onmouseup="groupBtnUp()"
+      onmouseleave="groupBtnCancel()"
+      ontouchstart="groupBtnDown(event)"
+      ontouchend="groupBtnUp(event)"
+      ontouchcancel="groupBtnCancel()">
       <div class="btn-shimmer"></div>
       <span class="btn-label" style="font-size:17px;">what now, crew?</span>
       <span class="btn-sub">suggest something from the group list</span>
@@ -1307,6 +1314,71 @@ function goBackFromSuggest(){if(isGroupSuggest){goTo('s-groupdetail');}else{goTo
 window.goBackFromSuggest=goBackFromSuggest;
 
 window.goSuggest=function(){const pool=getPool();if(!pool.length){alert('add some ideas first!');return;}isGroupSuggest=false;currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');};
+
+
+// ── GROUP BUTTON PRESS ────────────────────────────────────────────────────
+let groupBtnPressed=false,groupBtnTouchValid=false;
+function groupBtnDown(e){
+  if(e)e.preventDefault();
+  if(btnTransitioning)return;
+  if(e&&e.touches){
+    const t=e.touches[0];
+    const rect=document.getElementById('groupBtn').getBoundingClientRect();
+    const px=(t.clientX-rect.left)/rect.width;
+    const py=(t.clientY-rect.top)/rect.height;
+    groupBtnTouchValid=(px>0.15&&px<0.85&&py>0.15&&py<0.85);
+  } else {groupBtnTouchValid=true;}
+  if(!groupBtnTouchValid)return;
+  groupBtnPressed=true;
+  document.getElementById('groupBtn').classList.add('pressed');
+  haptic('press');
+}
+function groupBtnUp(e){
+  if(e)e.preventDefault();
+  if(!groupBtnPressed||!groupBtnTouchValid||btnTransitioning)return;
+  groupBtnPressed=false;
+  const btn=document.getElementById('groupBtn');
+  btn.classList.remove('pressed');
+  btn.classList.add('sprung');
+  haptic('spring');
+  setTimeout(()=>{
+    btn.classList.remove('sprung');
+    triggerGroupTransition();
+  },180);
+}
+function groupBtnCancel(){
+  groupBtnPressed=false;
+  const btn=document.getElementById('groupBtn');
+  if(btn){btn.classList.remove('pressed','sprung');}
+}
+window.groupBtnDown=groupBtnDown;
+window.groupBtnUp=groupBtnUp;
+window.groupBtnCancel=groupBtnCancel;
+
+function triggerGroupTransition(){
+  const btn=document.getElementById('groupBtn');
+  if(!btn)return;
+  btnTransitioning=true;
+  const flood=$('tFlood');const shock=$('tShock');const tText=$('tText');const tSpan=$('tTextSpan');
+  const bRect=btn.getBoundingClientRect();
+  shock.style.cssText=`position:absolute;left:${bRect.left}px;top:${bRect.top}px;width:${bRect.width}px;height:${bRect.height}px;border-radius:20px;border:2px solid rgba(184,67,47,0.65);animation:shockwave .5s ease-out forwards;`;
+  flood.style.cssText=`position:absolute;width:${bRect.width}px;height:${bRect.height}px;left:${bRect.left}px;top:${bRect.top}px;border-radius:20px;background:var(--coral);transform:scale(1);transition:none;`;
+  flood.offsetHeight;
+  setTimeout(()=>{
+    flood.style.transition='transform .9s cubic-bezier(0.4,0,0.15,1),border-radius .9s ease';
+    flood.style.transform='scale(30)';flood.style.borderRadius='50%';
+  },280);
+  setTimeout(()=>{tSpan.textContent='what now, crew?';tText.classList.add('show');},700);
+  setTimeout(()=>{tSpan.textContent="here's an idea.";},1300);
+  setTimeout(()=>{
+    tText.classList.remove('show');
+    goSuggestGroup();
+  },2100);
+  setTimeout(()=>{
+    flood.style.transition='opacity .4s';flood.style.opacity='0';
+    setTimeout(()=>{flood.style.cssText='';flood.style.opacity='';shock.style.cssText='';tSpan.textContent='what now?';btnTransitioning=false;},450);
+  },2400);
+}
 
 function goSuggestGroup(){
   const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}
