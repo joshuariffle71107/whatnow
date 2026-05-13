@@ -450,7 +450,7 @@
 <!-- SUGGEST -->
 <div id="s-suggest" class="screen">
   <div style="padding:52px 20px 8px;display:flex;align-items:center;gap:12px;">
-    <button class="back-btn" onclick="goBackFromSuggest()">← back</button>
+    <button class="back-btn" onclick="playSound('back');goBackFromSuggest()">← back</button>
   </div>
   <div style="padding:0 20px 8px;">
     <div style="font-size:12px;color:var(--gray);margin-bottom:2px;">pulled from your list</div>
@@ -568,7 +568,7 @@
 <!-- GROUP DETAIL -->
 <div id="s-groupdetail" class="screen">
   <div style="padding:52px 20px 4px;display:flex;justify-content:space-between;align-items:center;">
-    <button class="back-btn" onclick="goTo('s-groups')">← groups</button>
+    <button class="back-btn" onclick="playSound('back');goTo('s-groups')">← groups</button>
     <button onclick="openGroupSettings()" style="background:none;border:none;cursor:pointer;padding:6px 10px;border-radius:10px;font-size:13px;color:var(--gray);font-family:inherit;display:flex;align-items:center;gap:5px;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       settings
@@ -773,6 +773,7 @@ function goTo(id){
     next.style.opacity='1';
     next.style.transform='translateX(0)';
   });
+  playSound('transition');
   $('main-nav').style.display=noNavScreens.includes(id)?'none':'flex';
   allTabs.forEach(t=>{
     const on=(t==='home'&&id==='s-home')||(t==='groups'&&['s-groups','s-groupdetail','s-creategroup','s-groupideadetail'].includes(id))||(t==='someday'&&id==='s-someday')||(t==='profile'&&id==='s-profile');
@@ -805,9 +806,9 @@ function btnDown(e){
   }
   if(!btnTouchValid)return;
   btnPressed=true;
-  $('theBtn').classList.add('pressed');haptic('press');
+  $('theBtn').classList.add('pressed');haptic('press');playSound('press');
 }
-function btnUp(e){if(e)e.preventDefault();if(!btnPressed||!btnTouchValid||btnTransitioning)return;btnPressed=false;$('theBtn').classList.remove('pressed');$('theBtn').classList.add('sprung');haptic('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
+function btnUp(e){if(e)e.preventDefault();if(!btnPressed||!btnTouchValid||btnTransitioning)return;btnPressed=false;$('theBtn').classList.remove('pressed');$('theBtn').classList.add('sprung');haptic('spring');playSound('spring');setTimeout(()=>{$('theBtn').classList.remove('sprung');if(!btnTransitioning)triggerTransition5();},180);}
 function btnCancel(){btnPressed=false;$('theBtn').classList.remove('pressed','sprung');}
 window.btnDown=btnDown;window.btnUp=btnUp;window.btnCancel=btnCancel;
 
@@ -976,7 +977,7 @@ function makeSwipeRow(idea){
       wrap.style.overflow='hidden';
       setTimeout(async()=>{
         wrap.style.height='0';wrap.style.opacity='0';
-        await deleteDoc(doc(db,'ideas',idea.id));
+        playSound('delete');await deleteDoc(doc(db,'ideas',idea.id));
       },100);
     } else {
       // partial — bounce back
@@ -1168,6 +1169,112 @@ function showSug(idea){
 // ── HAPTICS ───────────────────────────────────────────────────────────────
 function haptic(type){try{if(navigator.vibrate){if(type==='press')navigator.vibrate(8);else if(type==='spring')navigator.vibrate([6,30,10]);else if(type==='success')navigator.vibrate([10,50,20,50,10]);}}catch(e){}}
 
+// ── SOUNDS ────────────────────────────────────────────────────────────────
+let audioCtx=null;
+function getCtx(){
+  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  return audioCtx;
+}
+
+function playSound(type){
+  try{
+    const ctx=getCtx();
+    const t=ctx.currentTime;
+
+    if(type==='press'){
+      // soft low click — like tapping glass
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(180,t);
+      o.frequency.exponentialRampToValueAtTime(120,t+0.06);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.12,t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+      o.start(t);o.stop(t+0.1);
+    }
+
+    else if(type==='spring'){
+      // bright upward tick — like a spring snapping back
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(300,t);
+      o.frequency.exponentialRampToValueAtTime(600,t+0.05);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.1,t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.12);
+      o.start(t);o.stop(t+0.15);
+    }
+
+    else if(type==='add'){
+      // soft pop — like a bubble appearing
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(600,t);
+      o.frequency.exponentialRampToValueAtTime(400,t+0.08);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.08,t+0.004);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      o.start(t);o.stop(t+0.12);
+    }
+
+    else if(type==='delete'){
+      // quick descending swoosh
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(400,t);
+      o.frequency.exponentialRampToValueAtTime(150,t+0.15);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.09,t+0.005);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+      o.start(t);o.stop(t+0.2);
+    }
+
+    else if(type==='skip'){
+      // short dull thud — like swiping something away
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(220,t);
+      o.frequency.exponentialRampToValueAtTime(160,t+0.07);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.07,t+0.004);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      o.start(t);o.stop(t+0.12);
+    }
+
+    else if(type==='transition'){
+      // very soft high whoosh — barely there
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(800,t);
+      o.frequency.exponentialRampToValueAtTime(1200,t+0.12);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.04,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+      o.start(t);o.stop(t+0.2);
+    }
+
+    else if(type==='success'){
+      // three note ascending chime — clean and satisfying
+      [[523.25,0],[659.25,0.12],[783.99,0.24]].forEach(([freq,delay])=>{
+        const o=ctx.createOscillator();const g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.type='sine';o.frequency.value=freq;
+        g.gain.setValueAtTime(0,t+delay);
+        g.gain.linearRampToValueAtTime(0.15,t+delay+0.04);
+        g.gain.exponentialRampToValueAtTime(0.001,t+delay+0.4);
+        o.start(t+delay);o.stop(t+delay+0.45);
+      });
+    }
+
+    else if(type==='back'){
+      // descending soft tick — mirror of transition
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';o.frequency.setValueAtTime(900,t);
+      o.frequency.exponentialRampToValueAtTime(600,t+0.1);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.04,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+      o.start(t);o.stop(t+0.18);
+    }
+
+  }catch(e){}
+}
+
 // ── DARK MODE ─────────────────────────────────────────────────────────────
 function initDarkMode(){
   const stored=localStorage.getItem('wn-dark');
@@ -1257,11 +1364,11 @@ function nextSug(){
 }
 window.nextSug=nextSug;
 
-function skipIdea(){skipCount++;if(currentDetailId){const idea=ideas.find(i=>i.id===currentDetailId);if(idea)updateDoc(doc(db,'ideas',currentDetailId),{skipCount:(idea.skipCount||0)+1});}if(skipCount>=2)$('skip-q').style.display='block';nextSug();}
+function skipIdea(){playSound('skip');skipCount++;if(currentDetailId){const idea=ideas.find(i=>i.id===currentDetailId);if(idea)updateDoc(doc(db,'ideas',currentDetailId),{skipCount:(idea.skipCount||0)+1});}if(skipCount>=2)$('skip-q').style.display='block';nextSug();}
 window.skipIdea=skipIdea;
 
 async function doIt(){
-  haptic('success');
+  haptic('success');playSound('success');
   if(currentDetailId){if(doneSugRecurring){await updateDoc(doc(db,'ideas',currentDetailId),{lastDone:serverTimestamp(),skipCount:0});}else{await updateDoc(doc(db,'ideas',currentDetailId),{isDone:true});}}
   celebrate(oneLiners[Math.floor(Math.random()*oneLiners.length)]);setTimeout(()=>goTo('s-home'),2500);
 }
@@ -1294,6 +1401,7 @@ window.selectDetailEnergy=selectDetailEnergy;
 
 async function addIdea(){
   const inp=$('new-idea');const val=inp.value.trim();if(!val)return;
+  playSound('add');
   await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,tag:selectedType,energy:selectedEnergyLevel,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});
   inp.value='';
   // reset type picker
@@ -1311,6 +1419,7 @@ window.addSomeday=addSomeday;
 
 async function addGroupIdea(){
   const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;
+  playSound('add');
   const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
   await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,energy:selectedGroupAddEnergy_val,addedBy:currentUsername,dateAdded:new Date().toISOString()}]});
   inp.value='';
@@ -1473,6 +1582,8 @@ function showNudge(){
   if(msg)el.innerHTML=`<div class="nudge">${msg}</div>`;
   else el.innerHTML='';
 }
+
+window.playSound=playSound;
 
 function getSmartNudge(){
   const now=new Date();
