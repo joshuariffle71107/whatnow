@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="What Now?"/>
   <meta name="theme-color" content="#B8432F"/>
+  <style>html,body{background:#B8432F !important;}*{-webkit-tap-highlight-color:transparent;}</style>
   <title>What Now?</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon.png"/>
@@ -309,7 +310,7 @@
     .form-group{display:flex;flex-direction:column;gap:8px;width:100%;}
   </style>
 </head>
-<body style="background:#B8432F;">
+<body style="background:#B8432F !important;">
 
 
 
@@ -868,7 +869,7 @@ initDarkMode();
 onAuthStateChanged(auth,async user=>{
   // remove the blank holding screen
   const loading=$('s-loading');if(loading)loading.remove();
-  document.body.style.background='';
+  setTimeout(()=>{document.body.style.background='';document.documentElement.style.background='';},100);
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
