@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background:#B8432F;">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
@@ -7,16 +7,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="What Now?"/>
   <meta name="theme-color" content="#B8432F"/>
-  <style>html,body{background:#B8432F !important;}*{-webkit-tap-highlight-color:transparent;}</style>
   <title>What Now?</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon.png"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html,body{height:100%;overflow:hidden;}
-    html{background:#FBF8F6;}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FBF8F6;max-width:430px;margin:0 auto;position:relative;}
-    body.dark-mode,html:has(body.dark-mode){background:#111010;}
-    @media(prefers-color-scheme:dark){html:not(:has(body.light-mode)){background:#111010;}body:not(.light-mode){background:#111010;}}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FBF8F6;max-width:430px;margin:0 auto;position:relative;}
     :root{
       --coral:#B8432F;--coral-dark:#8B2E1E;--coral-light:#FAECE7;--coral-mid:#D4604A;
       --bg:#FBF8F6;--bg2:#F4EFEb;--card:#FFFFFF;
@@ -310,7 +307,7 @@
     .form-group{display:flex;flex-direction:column;gap:8px;width:100%;}
   </style>
 </head>
-<body style="background:#B8432F !important;">
+<body>
 
 
 
@@ -869,7 +866,6 @@ initDarkMode();
 onAuthStateChanged(auth,async user=>{
   // remove the blank holding screen
   const loading=$('s-loading');if(loading)loading.remove();
-  setTimeout(()=>{document.body.style.background='';document.documentElement.style.background='';},100);
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
