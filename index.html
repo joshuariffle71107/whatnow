@@ -1248,9 +1248,6 @@ function renderGroupDetail(gid){
 
 
 // ── PROFILE & SETTINGS ────────────────────────────────────────────────────
-async 
-
-
 async function renderProfile(){
   if(!currentUser)return;
   $('profile-avatar').textContent=currentUsername?currentUsername.slice(0,2).toUpperCase():'?';
