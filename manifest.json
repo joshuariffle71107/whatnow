@@ -4,8 +4,8 @@
   "description": "Your list for life's in-between moments",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#C04A35",
+  "background_color": "#B8432F",
+  "theme_color": "#B8432F",
   "orientation": "portrait",
   "icons": [
     {
