@@ -702,21 +702,36 @@
 <!-- PROFILE -->
 <div id="s-profile" class="screen">
   <div class="topbar"><div class="topbar-left"><h1>profile</h1></div></div>
+
   <div style="padding:0 20px 20px;display:flex;flex-direction:column;align-items:center;">
     <div class="profile-avatar" id="profile-avatar">??</div>
     <div style="font-size:22px;font-weight:700;color:var(--text);" id="profile-username-display"></div>
     <div style="font-size:13px;color:var(--gray);margin-top:3px;" id="profile-email-display"></div>
   </div>
-  <div class="section-label">account settings</div>
-  <div class="profile-section">
-    <div class="profile-row" onclick="toggleDarkMode()">
-      <span class="profile-row-label">dark mode</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="dark-mode-val">off</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+
+  <div class="section-label">your stats</div>
+  <div style="display:flex;gap:10px;padding:0 20px 16px;">
+    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px;border:0.5px solid var(--gray3);text-align:center;">
+      <div style="font-size:26px;font-weight:700;color:var(--coral);" id="stat-total">0</div>
+      <div style="font-size:11px;color:var(--gray);margin-top:2px;">ideas added</div>
     </div>
+    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px;border:0.5px solid var(--gray3);text-align:center;">
+      <div style="font-size:26px;font-weight:700;color:var(--teal);" id="stat-done">0</div>
+      <div style="font-size:11px;color:var(--gray);margin-top:2px;">things done</div>
+    </div>
+    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px;border:0.5px solid var(--gray3);text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:var(--amber);" id="stat-fav">—</div>
+      <div style="font-size:11px;color:var(--gray);margin-top:2px;">top category</div>
+    </div>
+  </div>
+
+  <div class="section-label">account</div>
+  <div class="profile-section">
     <div class="profile-row" onclick="openEditField('username')"><span class="profile-row-label">username</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-username-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
     <div class="profile-row" onclick="openEditField('email')"><span class="profile-row-label">email</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-email-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
     <div class="profile-row" onclick="openEditField('password')"><span class="profile-row-label">password</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">••••••••</span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
   </div>
+
   <div class="edit-area" id="edit-area">
     <div class="form-label" id="edit-label"></div>
     <div id="edit-username-wrap" style="display:none;">
@@ -731,7 +746,61 @@
       <button class="detail-btn detail-btn-p" onclick="saveEditField()">save</button>
     </div>
   </div>
+
+  <div class="section-label" style="margin-top:8px;">preferences</div>
+  <div class="profile-section">
+    <div class="profile-row" onclick="toggleDarkMode()">
+      <span class="profile-row-label">dark mode</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="dark-mode-val">auto</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
+    <div class="profile-row" onclick="openEditField('nudge')">
+      <span class="profile-row-label">nudge frequency</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="nudge-freq-val">sometimes</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
+    <div class="profile-row" onclick="openEditField('defaultenergy')">
+      <span class="profile-row-label">default energy</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="default-energy-val">medium</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">spread the word</div>
+  <div class="profile-section">
+    <div class="profile-row" onclick="shareApp()">
+      <span class="profile-row-label">share what now?</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">invite friends</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">about</div>
+  <div class="profile-section">
+    <div class="profile-row" style="cursor:default;">
+      <span class="profile-row-label">version</span>
+      <span class="profile-row-val">1.0.0</span>
+    </div>
+    <div class="profile-row" style="cursor:default;">
+      <span class="profile-row-label">what now?</span>
+      <span class="profile-row-val" style="font-style:italic;font-size:11px;">your list for life's in-between moments</span>
+    </div>
+    <div class="profile-row" onclick="openFeedback()">
+      <span class="profile-row-label">send feedback</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">let us know</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">danger zone</div>
+  <div class="profile-section" style="margin-bottom:8px;">
+    <div class="profile-row" onclick="clearDoneHistory()">
+      <span class="profile-row-label" style="color:#E24B4A;">clear done history</span>
+      <span style="color:var(--gray);font-size:18px;">›</span>
+    </div>
+    <div class="profile-row" onclick="deleteAccount()">
+      <span class="profile-row-label" style="color:#E24B4A;">delete account</span>
+      <span style="color:var(--gray);font-size:18px;">›</span>
+    </div>
+  </div>
+
   <button class="signout-big" onclick="signOut()">sign out</button>
+  <div style="height:20px;"></div>
 </div>
 
 <!-- NAV -->
