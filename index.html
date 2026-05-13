@@ -62,6 +62,21 @@
     .btn-sub{font-size:11px;color:rgba(255,255,255,0.6);display:block;margin-top:3px;pointer-events:none;}
 
 
+
+    /* WALKTHROUGH */
+    .wt-screen{position:fixed;inset:0;background:var(--bg);z-index:800;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 32px 48px;text-align:center;max-width:430px;margin:0 auto;}
+    .wt-screen.hidden{display:none;}
+    .wt-icon{font-size:72px;margin-bottom:8px;animation:wtPop .4s cubic-bezier(0.34,1.56,0.64,1);}
+    @keyframes wtPop{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+    .wt-title{font-size:26px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;margin-bottom:12px;line-height:1.2;}
+    .wt-body{font-size:15px;color:var(--gray);line-height:1.6;max-width:280px;}
+    .wt-dots{display:flex;gap:8px;justify-content:center;}
+    .wt-dot{width:7px;height:7px;border-radius:50%;background:var(--gray2);transition:background .2s;}
+    .wt-dot.on{background:var(--coral);}
+    .wt-btn{background:var(--coral);color:#fff;border:none;border-radius:16px;padding:16px 40px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;box-shadow:0 4px 14px rgba(184,67,47,0.3);transition:transform .12s;}
+    .wt-btn:active{transform:scale(0.97);}
+    .wt-skip{background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;font-family:inherit;margin-top:12px;}
+
     /* SPLASH */
     #splash{position:fixed;inset:0;background:#B8432F;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .7s ease;pointer-events:none;}
     #splash.gone{opacity:0;}
@@ -325,6 +340,24 @@
 
 <div id="splash"><div id="splash-logo">what now?</div><div id="splash-sub">your list for life's in-between moments</div></div>
 <div id="s-loading" class="screen active" style="background:#B8432F;position:fixed;inset:0;z-index:9998;"></div>
+
+<!-- WALKTHROUGH -->
+<div id="wt-overlay" class="wt-screen hidden">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <div class="wt-icon" id="wt-icon">😮‍💨</div>
+    <div class="wt-title" id="wt-title">what now?</div>
+    <div class="wt-body" id="wt-body">tap the big button and the app picks something from your list. no more staring at the ceiling wondering what to do.</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;">
+    <div class="wt-dots">
+      <div class="wt-dot on" id="wtd0"></div>
+      <div class="wt-dot" id="wtd1"></div>
+      <div class="wt-dot" id="wtd2"></div>
+    </div>
+    <button class="wt-btn" id="wt-next-btn" onclick="wtNext()">next</button>
+    <button class="wt-skip" onclick="wtDone()">skip intro</button>
+  </div>
+</div>
 
 <!-- SIGN IN -->
 <div id="s-signin" class="screen">
@@ -922,7 +955,7 @@ async function finishOnboard(){
   selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;selectedTexts.push(text);const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false}));});
   const prefs=getOnboardPreferences(selectedTexts);
   await Promise.all(batch);await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true,prefs});
-  setupListeners();$('main-nav').style.display='flex';goTo('s-home');
+  setupListeners();$('main-nav').style.display='flex';goTo('s-home');showWalkthrough();
 }
 window.finishOnboard=finishOnboard;
 
@@ -994,7 +1027,7 @@ function renderIdeas(){
   let active=ideas.filter(i=>currentFilter==='anything'||i.tag===currentFilter);
   if(searchQuery)active=active.filter(i=>i.text.toLowerCase().includes(searchQuery));
   if(!active.length){
-    el.innerHTML=searchQuery?'<div class="empty">no ideas match that search.</div>':'<div class="empty">your list is empty!<br>add some ideas below 👇</div>';
+    el.innerHTML=searchQuery?'<div class="empty" style="padding:48px 24px;"><div style="font-size:40px;margin-bottom:12px;">🔍</div><div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;">no matches.</div><div style="font-size:13px;color:var(--gray);">try a different word.</div></div>':'<div class="empty" style="padding:48px 24px;"><div style="font-size:48px;margin-bottom:16px;">🤔</div><div style="font-size:18px;font-weight:600;color:var(--text);font-family:Georgia,serif;font-style:italic;margin-bottom:8px;">nothing here yet.</div><div style="font-size:14px;color:var(--gray);line-height:1.6;">add something you\'ve been meaning to do — something fun, something productive, or something you\'ve just never gotten around to.</div></div>';
     return;
   }
   el.innerHTML='';
@@ -1003,13 +1036,13 @@ function renderIdeas(){
 
 function renderGroups(){
   const el=$('group-list');if(!el)return;el.innerHTML='';
-  if(!groups.length){el.innerHTML='<div class="empty">no groups yet.<br>create one and add your friends!</div>';return;}
+  if(!groups.length){el.innerHTML='<div class="empty" style="padding:48px 24px;"><div style="font-size:48px;margin-bottom:16px;">&#x1F465;</div><div style="font-size:18px;font-weight:600;color:var(--text);font-family:Georgia,serif;font-style:italic;margin-bottom:8px;">no groups yet.</div><div style="font-size:14px;color:var(--gray);line-height:1.6;">create a group with friends and actually decide what to do.</div></div>';return;}
   groups.forEach(g=>{const card=document.createElement('div');card.className='group-card';const avs=(g.usernames||[]).slice(0,4).map(u=>`<div class="avatar">${u.slice(0,2).toUpperCase()}</div>`).join('');card.innerHTML=`<div class="group-name">${g.name}</div><div class="group-meta">${(g.members||[]).length} members · ${(g.ideas||[]).length} ideas</div><div class="avatar-row">${avs}</div>`;card.onclick=()=>openGroup(g.id);el.appendChild(card);});
 }
 
 function renderSomeday(){
   const el=$('someday-list');if(!el)return;el.innerHTML='';
-  if(!somedays.length){el.innerHTML='<div class="empty">no intentions yet.<br>add something you\'ve been meaning to do.</div>';return;}
+  if(!somedays.length){el.innerHTML='<div class="empty" style="padding:48px 24px;"><div style="font-size:48px;margin-bottom:16px;">🌙</div><div style="font-size:18px;font-weight:600;color:var(--text);font-family:Georgia,serif;font-style:italic;margin-bottom:8px;">nothing here yet.</div><div style="font-size:14px;color:var(--gray);line-height:1.6;">someday is for the things you\'ve been meaning to do but aren\'t ready to commit to. no pressure, no deadlines.</div></div>';return;}
   somedays.forEach(s=>{const row=document.createElement('div');row.className='idea-row';const bar=document.createElement('div');bar.className='age-bar';bar.style.background=GRAY;row.appendChild(bar);row.innerHTML+=`<div class="idea-dot" style="background:${GRAY};margin-left:6px;"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note||'someday intention'}</div></div><span class="idea-tag tag-someday">someday</span>`;row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){updateDoc(doc(db,'ideas',s.id),{isSomeday:false,note:null});}};el.appendChild(row);});
 }
 
@@ -1106,7 +1139,7 @@ function renderGroupDetail(gid){
   let ideas=(g.ideas||[]);
   if(groupFilter!=='anything')ideas=ideas.filter(i=>(i.tag||'group')===groupFilter);
   if(groupSearchQuery)ideas=ideas.filter(i=>i.text.toLowerCase().includes(groupSearchQuery));
-  if(!ideas.length){el.innerHTML='<div class="empty">no ideas yet.<br>add something for the group!</div>';}
+  if(!ideas.length){el.innerHTML='<div class="empty" style="padding:40px 24px;"><div style="font-size:40px;margin-bottom:12px;">💡</div><div style="font-size:16px;font-weight:600;color:var(--text);font-family:Georgia,serif;font-style:italic;margin-bottom:6px;">no group ideas yet.</div><div style="font-size:13px;color:var(--gray);line-height:1.5;">add things you all want to do together. anyone in the group can add ideas.</div></div>';}
   else{ideas.forEach(idea=>el.appendChild(makeGroupSwipeRow(idea,gid)));}
   const membersEl=$('group-members');if(!membersEl)return;membersEl.innerHTML='';
   (g.usernames||[]).forEach(u=>{const row=document.createElement('div');row.className='member-row';row.innerHTML=`<div class="avatar" style="margin-right:8px;">${u.slice(0,2).toUpperCase()}</div><span>@${u}</span>`;membersEl.appendChild(row);});
@@ -1196,6 +1229,45 @@ function updateDarkModeVal(){
   el.textContent=isDark?'on':isLight?'off (overriding system)':'auto';
 }
 // initDarkMode called after DOM ready
+
+
+// ── WALKTHROUGH ────────────────────────────────────────────────────────────
+const wtSlides=[
+  {icon:'😮‍💨',title:'what now?',body:'tap the big button and the app picks something from your list. no more staring at the ceiling wondering what to do.',btn:'next'},
+  {icon:'👥',title:'do it together.',body:'create groups with friends. add shared ideas. hit what now crew when everyone is free and no one can decide.',btn:'next'},
+  {icon:'🌙',title:'the someday list.',body:'some ideas are not for today. park them in someday and the app will nudge you when the moment feels right.',btn:'lets go'},
+];
+let wtStep=0;
+
+function wtShow(){
+  const s=wtSlides[wtStep];
+  document.getElementById('wt-icon').textContent=s.icon;
+  document.getElementById('wt-title').textContent=s.title;
+  document.getElementById('wt-body').textContent=s.body;
+  document.getElementById('wt-next-btn').textContent=s.btn;
+  for(let i=0;i<3;i++){
+    const d=document.getElementById('wtd'+i);
+    if(d)d.classList.toggle('on',i===wtStep);
+  }
+}
+
+function wtNext(){
+  if(wtStep<wtSlides.length-1){wtStep++;wtShow();}
+  else{wtDone();}
+}
+window.wtNext=wtNext;
+
+function wtDone(){
+  document.getElementById('wt-overlay').classList.add('hidden');
+  wtStep=0;
+}
+window.wtDone=wtDone;
+
+function showWalkthrough(){
+  wtStep=0;wtShow();
+  document.getElementById('wt-overlay').classList.remove('hidden');
+}
+window.showWalkthrough=showWalkthrough;
 
 // ── SEARCH ────────────────────────────────────────────────────────────────
 let searchQuery='';
