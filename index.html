@@ -589,9 +589,17 @@
   </div>
   <div class="section-label">group ideas</div>
   <div class="idea-list" id="group-idea-list"></div>
-  <div class="add-row">
-    <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()"/>
-    <button class="add-btn" onclick="addGroupIdea()">+ add</button>
+  <div style="padding:10px 20px 14px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;gap:8px;">
+      <input class="add-inp" id="group-new-idea" placeholder="add idea for the group..." onkeydown="if(event.key==='Enter')addGroupIdea()" style="flex:1;min-width:0;"/>
+      <button class="add-btn" onclick="addGroupIdea()" style="flex-shrink:0;white-space:nowrap;">+ add</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:var(--gray);margin-right:2px;">energy:</span>
+      <button class="type-btn" onclick="selectGroupAddEnergy(this,'low')">😴 low</button>
+      <button class="type-btn on" onclick="selectGroupAddEnergy(this,'medium')">😊 medium</button>
+      <button class="type-btn" onclick="selectGroupAddEnergy(this,'high')">⚡ high</button>
+    </div>
   </div>
 </div>
 
@@ -627,6 +635,14 @@
   <div style="padding:0 20px 14px;">
     <div class="form-label" style="margin-bottom:8px;">type</div>
     <div style="display:flex;gap:7px;flex-wrap:wrap;" id="gid-type-pills"></div>
+  </div>
+  <div style="padding:0 20px 14px;">
+    <div class="form-label" style="margin-bottom:8px;">energy level</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;" id="gid-energy-pills">
+      <button class="type-btn" onclick="selectGidEnergy(this,'low')">😴 low</button>
+      <button class="type-btn on" onclick="selectGidEnergy(this,'medium')">😊 medium</button>
+      <button class="type-btn" onclick="selectGidEnergy(this,'high')">⚡ high</button>
+    </div>
   </div>
   <div class="detail-actions">
     <button class="add-btn" style="width:100%;padding:13px;border-radius:12px;" onclick="saveGroupIdea()">save changes</button>
@@ -999,7 +1015,19 @@ function renderSomeday(){
   somedays.forEach(s=>{const row=document.createElement('div');row.className='idea-row';const bar=document.createElement('div');bar.className='age-bar';bar.style.background=GRAY;row.appendChild(bar);row.innerHTML+=`<div class="idea-dot" style="background:${GRAY};margin-left:6px;"></div><div class="idea-info"><div class="idea-text">${s.text}</div><div class="someday-note">${s.note||'someday intention'}</div></div><span class="idea-tag tag-someday">someday</span>`;row.onclick=()=>{if(confirm(`move "${s.text}" to your main list?`)){updateDoc(doc(db,'ideas',s.id),{isSomeday:false,note:null});}};el.appendChild(row);});
 }
 
-let groupFilter='anything',groupSearchQuery='',selectedGroupType='group';
+let groupFilter='anything',groupSearchQuery='',selectedGroupType='group',selectedGroupEnergy='medium',selectedGroupAddEnergy_val='medium';
+
+function selectGroupAddEnergy(el,level){
+  el.closest('div').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');selectedGroupAddEnergy_val=level;
+}
+window.selectGroupAddEnergy=selectGroupAddEnergy;
+
+function selectGidEnergy(el,level){
+  document.querySelectorAll('#gid-energy-pills .type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+window.selectGidEnergy=selectGidEnergy;
 
 function filterGroupPill(el,f){
   document.querySelectorAll('#s-groupdetail .filter-row .pill').forEach(p=>p.classList.remove('on'));
@@ -1210,13 +1238,24 @@ window.goSuggest=function(){const pool=getPool();if(!pool.length){alert('add som
 
 function goSuggestGroup(){
   const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}
-  isGroupSuggest=true;const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];
+  isGroupSuggest=true;
+  // filter by energy if not medium
+  let pool=[...(g.ideas||[])];
+  if(currentEnergy!=='medium'){
+    const filtered=pool.filter(i=>i.energy?i.energy===currentEnergy:true);
+    if(filtered.length)pool=filtered;
+  }
+  const idea=pool[Math.floor(Math.random()*pool.length)];
   $('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;doneSugRecurring=true;goTo('s-suggest');
 }
 window.goSuggestGroup=goSuggestGroup;
 
 function nextSug(){
-  if(isGroupSuggest){const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length)return;const idea=g.ideas[Math.floor(Math.random()*g.ideas.length)];$('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;return;}
+  if(isGroupSuggest){
+    const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length)return;
+    let pool=[...(g.ideas||[])];
+    if(currentEnergy!=='medium'){const ef=pool.filter(i=>i.energy?i.energy===currentEnergy:true);if(ef.length)pool=ef;}
+    const idea=pool[Math.floor(Math.random()*pool.length)];$('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;return;}
   const pool=getPool();if(!pool.length)return;currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
 }
 window.nextSug=nextSug;
@@ -1276,12 +1315,12 @@ window.addSomeday=addSomeday;
 async function addGroupIdea(){
   const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;
   const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
-  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,addedBy:currentUsername,dateAdded:new Date().toISOString()}]});
+  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,energy:selectedGroupAddEnergy_val,addedBy:currentUsername,dateAdded:new Date().toISOString()}]});
   inp.value='';
-  // reset type picker
+  // reset pickers
   document.querySelectorAll('#s-groupdetail .type-btn').forEach(b=>b.classList.remove('on'));
-  const first=document.querySelector('#s-groupdetail .type-btn');if(first)first.classList.add('on');
-  selectedGroupType='group';
+  const medBtn=document.querySelector('#s-groupdetail [onclick*="medium"]');if(medBtn)medBtn.classList.add('on');
+  selectedGroupType='group';selectedGroupAddEnergy_val='medium';
 }
 window.addGroupIdea=addGroupIdea;
 
@@ -1352,7 +1391,9 @@ async function saveGroupIdea(){
   const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
   const newText=$('gid-title').value.trim();if(!newText)return;
   const newTag=document.querySelector('#gid-type-pills .type-btn.on')?.textContent||'group';
-  const updatedIdeas=(g.ideas||[]).map(i=>i.id===currentGroupIdeaId?{...i,text:newText,tag:newTag}:i);
+  const activeGidE=document.querySelector('#gid-energy-pills .type-btn.on');
+  const newGidEnergy=activeGidE?(['low','medium','high'].find(e=>activeGidE.getAttribute('onclick').includes(e))||'medium'):'medium';
+  const updatedIdeas=(g.ideas||[]).map(i=>i.id===currentGroupIdeaId?{...i,text:newText,tag:newTag,energy:newGidEnergy}:i);
   await updateDoc(doc(db,'groups',currentGroupId),{ideas:updatedIdeas});goTo('s-groupdetail');
 }
 window.saveGroupIdea=saveGroupIdea;
