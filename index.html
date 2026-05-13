@@ -150,6 +150,20 @@
     body.dark-mode .age-bar{opacity:0.5;}
     body.dark-mode .btn-sub{color:rgba(255,255,255,0.55);}
     body.dark-mode .filter-row{background:var(--bg);}
+    body.dark-mode .profile-row-label{color:var(--text);}
+    body.dark-mode .profile-row-val{color:var(--gray);}
+    body.dark-mode .profile-row{border-color:var(--gray3);}
+    body.dark-mode .section-label{color:var(--gray);}
+    body.dark-mode .detail-label{color:var(--gray);}
+    body.dark-mode .detail-val{color:var(--text);}
+    body.dark-mode .form-label{color:var(--gray);}
+    body.dark-mode .nudge{background:#2E1510;border-color:rgba(184,67,47,0.3);color:#F0A090;}
+    @media(prefers-color-scheme:dark){
+      body:not(.light-mode) .profile-row-label{color:var(--text);}
+      body:not(.light-mode) .profile-row-val{color:var(--gray);}
+      body:not(.light-mode) .profile-row{border-color:var(--gray3);}
+      body:not(.light-mode) .section-label{color:var(--gray);}
+    }
 
     /* TRANSITION OVERLAYS */
     .t-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100vh;pointer-events:none;z-index:500;}
@@ -704,50 +718,52 @@
 
 <!-- PROFILE -->
 <div id="s-profile" class="screen">
-  <div style="padding:52px 20px 16px;"><h1 style="font-size:28px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;">profile</h1></div>
+  <div style="padding:52px 20px 12px;">
+    <div style="font-size:28px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;">profile</div>
+  </div>
 
   <!-- Avatar -->
-  <div style="padding:0 20px 24px;display:flex;flex-direction:column;align-items:center;gap:8px;">
-    <div class="profile-avatar" id="profile-avatar">??</div>
-    <div style="font-size:20px;font-weight:700;color:var(--text);" id="profile-username-display"></div>
-    <div style="font-size:13px;color:var(--gray);" id="profile-email-display"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;padding:0 20px 20px;gap:6px;">
+    <div id="profile-avatar" style="width:72px;height:72px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#fff;">??</div>
+    <div id="profile-username-display" style="font-size:20px;font-weight:700;color:var(--text);"></div>
+    <div id="profile-email-display" style="font-size:13px;color:var(--gray);"></div>
   </div>
 
   <!-- Stats -->
-  <div class="section-label">your stats</div>
-  <div style="display:flex;gap:10px;padding:0 20px 24px;">
+  <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:0 20px 8px;">your stats</div>
+  <div style="display:flex;gap:10px;padding:0 20px 20px;">
     <div style="flex:1;background:var(--card);border-radius:14px;padding:14px 8px;border:0.5px solid var(--gray3);text-align:center;">
-      <div style="font-size:24px;font-weight:700;color:var(--coral);" id="stat-total">—</div>
+      <div id="stat-total" style="font-size:24px;font-weight:700;color:var(--coral);">—</div>
       <div style="font-size:10px;color:var(--gray);margin-top:3px;">ideas added</div>
     </div>
     <div style="flex:1;background:var(--card);border-radius:14px;padding:14px 8px;border:0.5px solid var(--gray3);text-align:center;">
-      <div style="font-size:24px;font-weight:700;color:var(--teal);" id="stat-done">—</div>
+      <div id="stat-done" style="font-size:24px;font-weight:700;color:#1D9E75;">—</div>
       <div style="font-size:10px;color:var(--gray);margin-top:3px;">things done</div>
     </div>
     <div style="flex:1;background:var(--card);border-radius:14px;padding:14px 8px;border:0.5px solid var(--gray3);text-align:center;">
-      <div style="font-size:18px;font-weight:700;color:var(--amber);" id="stat-fav">—</div>
+      <div id="stat-fav" style="font-size:18px;font-weight:700;color:#BA7517;">—</div>
       <div style="font-size:10px;color:var(--gray);margin-top:3px;">top category</div>
     </div>
   </div>
 
   <!-- Account -->
-  <div class="section-label">account</div>
-  <div class="profile-section">
-    <div class="profile-row" onclick="openEditField('username')">
-      <span class="profile-row-label">username</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-username-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div>
+  <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:0 20px 8px;">account</div>
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+    <div onclick="openEditField('username')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">username</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span id="pr-username-val" style="font-size:13px;color:var(--gray);"></span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
-    <div class="profile-row" onclick="openEditField('email')">
-      <span class="profile-row-label">email</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-email-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    <div onclick="openEditField('email')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">email</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span id="pr-email-val" style="font-size:13px;color:var(--gray);"></span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
-    <div class="profile-row" onclick="openEditField('password')">
-      <span class="profile-row-label">password</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">••••••••</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    <div onclick="openEditField('password')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">password</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--gray);">••••••••</span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
   </div>
 
-  <!-- Edit area — sits right below account section -->
+  <!-- Edit area -->
   <div class="edit-area" id="edit-area" style="margin-top:8px;">
     <div class="form-label" id="edit-label"></div>
     <div id="edit-username-wrap" style="display:none;">
@@ -764,62 +780,58 @@
   </div>
 
   <!-- Preferences -->
-  <div class="section-label" style="margin-top:24px;">preferences</div>
-  <div class="profile-section">
-    <div class="profile-row" onclick="toggleDarkMode()">
-      <span class="profile-row-label">dark mode</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="dark-mode-val">auto</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+  <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">preferences</div>
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+    <div onclick="toggleDarkMode()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">dark mode</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span id="dark-mode-val" style="font-size:13px;color:var(--gray);">auto</span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
-    <div class="profile-row" onclick="openEditField('nudge')">
-      <span class="profile-row-label">nudge frequency</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="nudge-freq-val">sometimes</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    <div onclick="openEditField('nudge')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">nudge frequency</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span id="nudge-freq-val" style="font-size:13px;color:var(--gray);">sometimes</span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
-    <div class="profile-row" onclick="openEditField('defaultenergy')">
-      <span class="profile-row-label">default energy</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="default-energy-val">medium</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    <div onclick="openEditField('defaultenergy')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">default energy</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span id="default-energy-val" style="font-size:13px;color:var(--gray);">medium</span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
   </div>
 
   <!-- Spread the word -->
-  <div class="section-label" style="margin-top:24px;">spread the word</div>
-  <div class="profile-section">
-    <div class="profile-row" onclick="shareApp()">
-      <span class="profile-row-label">share what now?</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">invite friends</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+  <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">spread the word</div>
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+    <div onclick="shareApp()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">share what now?</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--gray);">invite friends</span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
   </div>
 
   <!-- About -->
-  <div class="section-label" style="margin-top:24px;">about</div>
-  <div class="profile-section">
-    <div class="profile-row" style="cursor:default;">
-      <span class="profile-row-label">version</span>
-      <span class="profile-row-val">1.0.0</span>
+  <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">about</div>
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);">
+      <span style="font-size:14px;color:var(--text);">version</span>
+      <span style="font-size:13px;color:var(--gray);">1.0.0</span>
     </div>
-    <div class="profile-row" style="cursor:default;">
-      <span class="profile-row-label">what now?</span>
-      <span class="profile-row-val" style="font-style:italic;font-size:11px;">your list for life's in-between moments</span>
-    </div>
-    <div class="profile-row" onclick="openFeedback()">
-      <span class="profile-row-label">send feedback</span>
-      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">let us know</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    <div onclick="openFeedback()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
+      <span style="font-size:14px;color:var(--text);">send feedback</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;color:var(--gray);">let us know</span><span style="color:var(--gray);font-size:18px;">›</span></div>
     </div>
   </div>
 
   <!-- Danger zone -->
-  <div class="section-label" style="margin-top:24px;">danger zone</div>
-  <div class="profile-section">
-    <div class="profile-row" onclick="clearDoneHistory()">
-      <span class="profile-row-label" style="color:#E24B4A;">clear done history</span>
+  <div style="font-size:10px;font-weight:600;color:var(--gray);letter-spacing:.07em;text-transform:uppercase;padding:24px 20px 8px;">danger zone</div>
+  <div style="margin:0 20px;background:var(--card);border-radius:16px;border:0.5px solid var(--gray3);overflow:hidden;">
+    <div onclick="clearDoneHistory()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;">
+      <span style="font-size:14px;color:#E24B4A;">clear done history</span>
       <span style="color:var(--gray);font-size:18px;">›</span>
     </div>
-    <div class="profile-row" onclick="deleteAccount()">
-      <span class="profile-row-label" style="color:#E24B4A;">delete account</span>
+    <div onclick="deleteAccount()" style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;">
+      <span style="font-size:14px;color:#E24B4A;">delete account</span>
       <span style="color:var(--gray);font-size:18px;">›</span>
     </div>
   </div>
 
-  <button class="signout-big" style="margin-top:24px;" onclick="signOut()">sign out</button>
+  <button onclick="signOut()" style="margin:24px 20px 0;background:none;border:0.5px solid #E24B4A;border-radius:14px;padding:13px;width:calc(100% - 40px);font-size:14px;font-weight:600;color:#E24B4A;cursor:pointer;font-family:inherit;">sign out</button>
   <div style="height:40px;"></div>
 </div>
 
