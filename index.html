@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background:#B8432F;">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
@@ -120,6 +120,7 @@
       body:not(.light-mode) .pill{background:var(--bg2);border-color:var(--gray2);color:var(--gray);}
       body:not(.light-mode) .pill.on{background:var(--coral);border-color:var(--coral);color:#fff;}
       body:not(.light-mode) .type-btn{background:var(--bg2);border-color:var(--gray2);color:var(--gray);}
+      body:not(.light-mode) .type-btn.on{background:var(--coral);border-color:var(--coral);color:#fff;font-weight:600;}
       body:not(.light-mode) .age-bar{opacity:0.5;}
       body:not(.light-mode) .btn-sub{color:rgba(255,255,255,0.55);}
       body:not(.light-mode) .filter-row,body:not(.light-mode) [style*="position:sticky"]{background:var(--bg);}
@@ -132,6 +133,7 @@
     body.dark-mode .pill{background:var(--bg2);border-color:var(--gray2);color:var(--gray);}
     body.dark-mode .pill.on{background:var(--coral);border-color:var(--coral);color:#fff;}
     body.dark-mode .type-btn{background:var(--bg2);border-color:var(--gray2);color:var(--gray);}
+    body.dark-mode .type-btn.on{background:var(--coral);border-color:var(--coral);color:#fff;font-weight:600;}
     body.dark-mode .age-bar{opacity:0.5;}
     body.dark-mode .btn-sub{color:rgba(255,255,255,0.55);}
     body.dark-mode .filter-row{background:var(--bg);}
@@ -307,7 +309,7 @@
     .form-group{display:flex;flex-direction:column;gap:8px;width:100%;}
   </style>
 </head>
-<body>
+<body style="background:#B8432F;">
 
 
 
@@ -850,6 +852,7 @@ initDarkMode();
 onAuthStateChanged(auth,async user=>{
   // remove the blank holding screen
   const loading=$('s-loading');if(loading)loading.remove();
+  document.body.style.background='';
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
