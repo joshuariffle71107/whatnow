@@ -310,6 +310,9 @@
     /* PROFILE */
     .profile-avatar{width:80px;height:80px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 10px;letter-spacing:1px;}
     .profile-section{margin:0 20px;background:var(--card);border-radius:16px;overflow:hidden;border:0.5px solid var(--gray3);}
+    .profile-section+.section-label{margin-top:20px;}
+    .edit-area+.section-label{margin-top:20px;}
+    .profile-section+.edit-area{margin-top:8px;}
     .profile-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--gray3);cursor:pointer;transition:background .1s;}
     .profile-row:last-child{border-bottom:none;}
     .profile-row:active{background:var(--bg2);}
@@ -701,38 +704,51 @@
 
 <!-- PROFILE -->
 <div id="s-profile" class="screen">
-  <div class="topbar"><div class="topbar-left"><h1>profile</h1></div></div>
+  <div style="padding:52px 20px 16px;"><h1 style="font-size:28px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;">profile</h1></div>
 
-  <div style="padding:0 20px 20px;display:flex;flex-direction:column;align-items:center;">
+  <!-- Avatar -->
+  <div style="padding:0 20px 24px;display:flex;flex-direction:column;align-items:center;gap:8px;">
     <div class="profile-avatar" id="profile-avatar">??</div>
-    <div style="font-size:22px;font-weight:700;color:var(--text);" id="profile-username-display"></div>
-    <div style="font-size:13px;color:var(--gray);margin-top:3px;" id="profile-email-display"></div>
+    <div style="font-size:20px;font-weight:700;color:var(--text);" id="profile-username-display"></div>
+    <div style="font-size:13px;color:var(--gray);" id="profile-email-display"></div>
   </div>
 
+  <!-- Stats -->
   <div class="section-label">your stats</div>
-  <div style="display:flex;gap:10px;padding:0 20px 16px;">
-    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px;border:0.5px solid var(--gray3);text-align:center;">
-      <div style="font-size:26px;font-weight:700;color:var(--coral);" id="stat-total">0</div>
-      <div style="font-size:11px;color:var(--gray);margin-top:2px;">ideas added</div>
+  <div style="display:flex;gap:10px;padding:0 20px 24px;">
+    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px 8px;border:0.5px solid var(--gray3);text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--coral);" id="stat-total">—</div>
+      <div style="font-size:10px;color:var(--gray);margin-top:3px;">ideas added</div>
     </div>
-    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px;border:0.5px solid var(--gray3);text-align:center;">
-      <div style="font-size:26px;font-weight:700;color:var(--teal);" id="stat-done">0</div>
-      <div style="font-size:11px;color:var(--gray);margin-top:2px;">things done</div>
+    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px 8px;border:0.5px solid var(--gray3);text-align:center;">
+      <div style="font-size:24px;font-weight:700;color:var(--teal);" id="stat-done">—</div>
+      <div style="font-size:10px;color:var(--gray);margin-top:3px;">things done</div>
     </div>
-    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px;border:0.5px solid var(--gray3);text-align:center;">
-      <div style="font-size:22px;font-weight:700;color:var(--amber);" id="stat-fav">—</div>
-      <div style="font-size:11px;color:var(--gray);margin-top:2px;">top category</div>
+    <div style="flex:1;background:var(--card);border-radius:14px;padding:14px 8px;border:0.5px solid var(--gray3);text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--amber);" id="stat-fav">—</div>
+      <div style="font-size:10px;color:var(--gray);margin-top:3px;">top category</div>
     </div>
   </div>
 
+  <!-- Account -->
   <div class="section-label">account</div>
   <div class="profile-section">
-    <div class="profile-row" onclick="openEditField('username')"><span class="profile-row-label">username</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-username-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
-    <div class="profile-row" onclick="openEditField('email')"><span class="profile-row-label">email</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-email-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
-    <div class="profile-row" onclick="openEditField('password')"><span class="profile-row-label">password</span><div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">••••••••</span><span style="color:var(--gray);font-size:18px;">›</span></div></div>
+    <div class="profile-row" onclick="openEditField('username')">
+      <span class="profile-row-label">username</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-username-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
+    <div class="profile-row" onclick="openEditField('email')">
+      <span class="profile-row-label">email</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val" id="pr-email-val"></span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
+    <div class="profile-row" onclick="openEditField('password')">
+      <span class="profile-row-label">password</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="profile-row-val">••••••••</span><span style="color:var(--gray);font-size:18px;">›</span></div>
+    </div>
   </div>
 
-  <div class="edit-area" id="edit-area">
+  <!-- Edit area — sits right below account section -->
+  <div class="edit-area" id="edit-area" style="margin-top:8px;">
     <div class="form-label" id="edit-label"></div>
     <div id="edit-username-wrap" style="display:none;">
       <div class="username-wrap"><span class="username-prefix">@</span><input class="username-inp" id="edit-username-inp" autocomplete="off" oninput="checkEditUsername(this.value)"/></div>
@@ -747,7 +763,8 @@
     </div>
   </div>
 
-  <div class="section-label" style="margin-top:8px;">preferences</div>
+  <!-- Preferences -->
+  <div class="section-label" style="margin-top:24px;">preferences</div>
   <div class="profile-section">
     <div class="profile-row" onclick="toggleDarkMode()">
       <span class="profile-row-label">dark mode</span>
@@ -763,7 +780,8 @@
     </div>
   </div>
 
-  <div class="section-label" style="margin-top:8px;">spread the word</div>
+  <!-- Spread the word -->
+  <div class="section-label" style="margin-top:24px;">spread the word</div>
   <div class="profile-section">
     <div class="profile-row" onclick="shareApp()">
       <span class="profile-row-label">share what now?</span>
@@ -771,7 +789,8 @@
     </div>
   </div>
 
-  <div class="section-label" style="margin-top:8px;">about</div>
+  <!-- About -->
+  <div class="section-label" style="margin-top:24px;">about</div>
   <div class="profile-section">
     <div class="profile-row" style="cursor:default;">
       <span class="profile-row-label">version</span>
@@ -787,8 +806,9 @@
     </div>
   </div>
 
-  <div class="section-label" style="margin-top:8px;">danger zone</div>
-  <div class="profile-section" style="margin-bottom:8px;">
+  <!-- Danger zone -->
+  <div class="section-label" style="margin-top:24px;">danger zone</div>
+  <div class="profile-section">
     <div class="profile-row" onclick="clearDoneHistory()">
       <span class="profile-row-label" style="color:#E24B4A;">clear done history</span>
       <span style="color:var(--gray);font-size:18px;">›</span>
@@ -799,8 +819,8 @@
     </div>
   </div>
 
-  <button class="signout-big" onclick="signOut()">sign out</button>
-  <div style="height:20px;"></div>
+  <button class="signout-big" style="margin-top:24px;" onclick="signOut()">sign out</button>
+  <div style="height:40px;"></div>
 </div>
 
 <!-- NAV -->
