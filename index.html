@@ -1768,18 +1768,68 @@ function openEditField(type){
   else if(type==='password'){$('edit-label').textContent='new password';const inp=$('edit-generic-inp');inp.type='password';inp.placeholder='new password (min 6 chars)';inp.value='';inp.style.display='block';setTimeout(()=>inp.focus(),100);}
   else if(type==='nudge'){
     $('edit-label').textContent='nudge frequency';
-    const inp=$('edit-generic-inp');inp.type='text';inp.placeholder='always, sometimes, or never';
-    inp.value=localStorage.getItem('wn-nudge')||'sometimes';inp.style.display='block';setTimeout(()=>inp.focus(),100);
+    const cur=localStorage.getItem('wn-nudge')||'sometimes';
+    const wrap=$('edit-generic-inp');wrap.style.display='none';
+    // show picker inline
+    let picker=$('nudge-picker');
+    if(!picker){
+      picker=document.createElement('div');picker.id='nudge-picker';
+      picker.style.cssText='display:flex;gap:8px;flex-wrap:wrap;';
+      $('edit-area').insertBefore(picker,$('edit-err'));
+    }
+    picker.innerHTML=['always','sometimes','never'].map(o=>
+      `<button onclick="selectNudgePick('${o}')" id="np-${o}" style="flex:1;padding:10px 8px;border-radius:10px;border:0.5px solid ${o===cur?'var(--coral)':'var(--gray2)'};background:${o===cur?'var(--coral)':'var(--card)'};color:${o===cur?'#fff':'var(--gray)'};font-family:inherit;font-size:13px;font-weight:${o===cur?'600':'400'};cursor:pointer;">${o}</button>`
+    ).join('');
   }
   else if(type==='defaultenergy'){
     $('edit-label').textContent='default energy level';
-    const inp=$('edit-generic-inp');inp.type='text';inp.placeholder='low, medium, or high';
-    inp.value=localStorage.getItem('wn-default-energy')||'medium';inp.style.display='block';setTimeout(()=>inp.focus(),100);
+    const cur=localStorage.getItem('wn-default-energy')||'medium';
+    const wrap=$('edit-generic-inp');wrap.style.display='none';
+    let picker=$('energy-picker');
+    if(!picker){
+      picker=document.createElement('div');picker.id='energy-picker';
+      picker.style.cssText='display:flex;gap:8px;flex-wrap:wrap;';
+      $('edit-area').insertBefore(picker,$('edit-err'));
+    }
+    picker.innerHTML=['low','medium','high'].map(o=>
+      `<button onclick="selectEnergyPick('${o}')" id="ep-${o}" style="flex:1;padding:10px 8px;border-radius:10px;border:0.5px solid ${o===cur?'var(--coral)':'var(--gray2)'};background:${o===cur?'var(--coral)':'var(--card)'};color:${o===cur?'#fff':'var(--gray)'};font-family:inherit;font-size:13px;font-weight:${o===cur?'600':'400'};cursor:pointer;">${o==='low'?'😴 low':o==='medium'?'😊 medium':'⚡ high'}</button>`
+    ).join('');
   }
   $('edit-area').classList.add('open');
 }
 window.openEditField=openEditField;
-function closeEditField(){$('edit-area').classList.remove('open');}
+function selectNudgePick(val){
+  window._nudgePick=val;
+  ['always','sometimes','never'].forEach(o=>{
+    const b=document.getElementById('np-'+o);if(!b)return;
+    const on=o===val;
+    b.style.background=on?'var(--coral)':'var(--card)';
+    b.style.borderColor=on?'var(--coral)':'var(--gray2)';
+    b.style.color=on?'#fff':'var(--gray)';
+    b.style.fontWeight=on?'600':'400';
+  });
+}
+window.selectNudgePick=selectNudgePick;
+
+function selectEnergyPick(val){
+  window._energyPick=val;
+  ['low','medium','high'].forEach(o=>{
+    const b=document.getElementById('ep-'+o);if(!b)return;
+    const on=o===val;
+    b.style.background=on?'var(--coral)':'var(--card)';
+    b.style.borderColor=on?'var(--coral)':'var(--gray2)';
+    b.style.color=on?'#fff':'var(--gray)';
+    b.style.fontWeight=on?'600':'400';
+  });
+}
+window.selectEnergyPick=selectEnergyPick;
+
+function closeEditField(){
+  $('edit-area').classList.remove('open');
+  const np=$('nudge-picker');if(np)np.remove();
+  const ep=$('energy-picker');if(ep)ep.remove();
+  window._nudgePick=null;window._energyPick=null;
+}
 window.closeEditField=closeEditField;
 
 function checkEditUsername(val){
@@ -1798,14 +1848,16 @@ async function saveEditField(){
     else if(editFieldType==='email'){const val=$('edit-generic-inp').value.trim();if(!val){$('edit-err').textContent='email cannot be empty';return;}await updateEmail(auth.currentUser,val);await updateDoc(doc(db,'users',currentUser.uid),{email:val});$('edit-ok').textContent='email updated!';setTimeout(()=>renderProfile(),1200);}
     else if(editFieldType==='password'){const val=$('edit-generic-inp').value;if(val.length<6){$('edit-err').textContent='password must be at least 6 characters';return;}await updatePassword(auth.currentUser,val);$('edit-ok').textContent='password updated!';setTimeout(()=>closeEditField(),1200);}
     else if(editFieldType==='nudge'){
-      const val=$('edit-generic-inp').value.trim().toLowerCase();
-      if(!['always','sometimes','never'].includes(val)){$('edit-err').textContent='enter: always, sometimes, or never';return;}
-      localStorage.setItem('wn-nudge',val);$('nudge-freq-val').textContent=val;$('edit-ok').textContent='saved!';setTimeout(()=>closeEditField(),1000);
+      const val=window._nudgePick||(localStorage.getItem('wn-nudge')||'sometimes');
+      localStorage.setItem('wn-nudge',val);
+      const el=$('nudge-freq-val');if(el)el.textContent=val;
+      $('edit-ok').textContent='saved!';setTimeout(()=>closeEditField(),800);
     }
     else if(editFieldType==='defaultenergy'){
-      const val=$('edit-generic-inp').value.trim().toLowerCase();
-      if(!['low','medium','high'].includes(val)){$('edit-err').textContent='enter: low, medium, or high';return;}
-      localStorage.setItem('wn-default-energy',val);$('default-energy-val').textContent=val;currentEnergy=val;$('edit-ok').textContent='saved!';setTimeout(()=>closeEditField(),1000);
+      const val=window._energyPick||(localStorage.getItem('wn-default-energy')||'medium');
+      localStorage.setItem('wn-default-energy',val);
+      const el=$('default-energy-val');if(el)el.textContent=val;
+      currentEnergy=val;$('edit-ok').textContent='saved!';setTimeout(()=>closeEditField(),800);
     }
   }catch(e){$('edit-err').textContent=friendlyError(e.code);}
 }
