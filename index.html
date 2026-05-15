@@ -536,6 +536,7 @@
     <div class="sug-actions">
       <button class="sa" onclick="skipIdea()">skip it</button>
       <button class="sa" onclick="nextSug()">another one</button>
+      <button class="sa" id="sug-add-btn" onclick="addSuggestedToList()" style="display:none;">+ add to list</button>
       <button class="sa sa-p" onclick="doIt()">let's do it ✓</button>
     </div>
   </div>
@@ -550,6 +551,20 @@
         <button class="skip-opt" onclick="this.classList.toggle('on')">just not feeling it</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- NUDGE TO ADD MORE -->
+<div id="s-addmore" class="screen">
+  <div style="padding:52px 20px 8px;"><button class="back-btn" onclick="goTo('s-home')">← back</button></div>
+  <div style="padding:16px 20px 8px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:12px;">🤔</div>
+    <div style="font-size:22px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;margin-bottom:8px;">your list is pretty short.</div>
+    <div style="font-size:14px;color:var(--gray);line-height:1.6;max-width:280px;margin:0 auto;">add a few more ideas and the suggestions get a lot better. here are some to get you started:</div>
+  </div>
+  <div style="padding:12px 20px;" id="quick-add-list"></div>
+  <div style="padding:0 20px 16px;">
+    <button onclick="goTo('s-home')" style="width:100%;padding:13px;border-radius:14px;background:var(--coral);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">done adding ideas</button>
   </div>
 </div>
 
@@ -921,7 +936,7 @@ function $(id){return document.getElementById(id);}
 function isValidUsername(u){return /^[a-zA-Z0-9_]{3,}$/.test(u);}
 
 const allTabs=['home','groups','someday','profile'];
-const noNavScreens=['s-signin','s-signup','s-loading','s-onboard','s-suggest','s-detail','s-groupdetail','s-creategroup','s-groupideadetail','s-groupsettings'];
+const noNavScreens=['s-signin','s-signup','s-loading','s-addmore','s-onboard','s-suggest','s-detail','s-groupdetail','s-creategroup','s-groupideadetail','s-groupsettings'];
 
 function goTo(id){
   const prev=document.querySelector('.screen.active');
@@ -1384,16 +1399,16 @@ async function loadUserPrefs(){
 
 function getPool(){
   let pool=[...ideas];
-  // filter by idea's own energy field if set, otherwise fall back to tag-based guess
+  // filter by idea's own energy field — only filter if idea has energy set
   if(currentEnergy!=='medium'){
-    const byEnergy=pool.filter(i=>{
-      if(i.energy)return i.energy===currentEnergy;
-      // fallback: guess from tag
-      if(currentEnergy==='low')return['solo','free','productive'].includes(i.tag);
-      if(currentEnergy==='high')return['group','outside'].includes(i.tag);
-      return true;
-    });
-    if(byEnergy.length)pool=byEnergy;
+    const withEnergy=pool.filter(i=>i.energy);
+    if(withEnergy.length){
+      // if ideas have energy set, only show matching ones
+      const matched=withEnergy.filter(i=>i.energy===currentEnergy);
+      if(matched.length)pool=matched;
+      else pool=withEnergy; // no exact match, show all with energy set
+    }
+    // if no ideas have energy set at all, show everything
   }
   // filter by budget
   if(currentBudget!=='any'){
@@ -1420,6 +1435,8 @@ function showSug(idea){
   $('sug-meta').textContent=ageText(idea.dateAdded)+(ageLevel(idea.dateAdded)>=2?' · been a while!':'')+(idea.recurring===false?' · one-time':'');
   $('skip-q').style.display='none';
   doneSugText=idea.text;currentDetailId=idea.id;doneSugRecurring=idea.recurring!==false;
+  window._pendingSuggestedIdea=null;
+  const addBtn=$('sug-add-btn');if(addBtn)addBtn.style.display='none';
 }
 // ── SPLASH ────────────────────────────────────────────────────────────────
 // splash is pure CSS — no JS needed
@@ -1528,6 +1545,102 @@ function selectGidBudget(el,level){
   el.classList.add('on');
 }
 window.selectGidBudget=selectGidBudget;
+
+
+// ── SUGGESTED IDEAS ───────────────────────────────────────────────────────
+const SUGGESTED_IDEAS=[
+  {text:'go for a walk',tag:'outside',energy:'low',budget:'free'},
+  {text:'watch a movie',tag:'solo',energy:'low',budget:'free'},
+  {text:'call a friend',tag:'solo',energy:'low',budget:'free'},
+  {text:'try a new recipe',tag:'solo',energy:'medium',budget:'cheap'},
+  {text:'go to the gym',tag:'productive',energy:'high',budget:'free'},
+  {text:'explore a new neighborhood',tag:'outside',energy:'medium',budget:'free'},
+  {text:'game night with friends',tag:'group',energy:'high',budget:'free'},
+  {text:'read a book',tag:'solo',energy:'low',budget:'free'},
+  {text:'go to a coffee shop',tag:'solo',energy:'low',budget:'cheap'},
+  {text:'try a new restaurant',tag:'group',energy:'medium',budget:'money'},
+  {text:'go hiking',tag:'outside',energy:'high',budget:'free'},
+  {text:'watch a documentary',tag:'solo',energy:'low',budget:'free'},
+  {text:'go bowling',tag:'group',energy:'medium',budget:'cheap'},
+  {text:'visit a museum',tag:'outside',energy:'medium',budget:'cheap'},
+  {text:'do a puzzle',tag:'solo',energy:'low',budget:'free'},
+  {text:'go to the park',tag:'outside',energy:'low',budget:'free'},
+  {text:'cook a new dish',tag:'solo',energy:'medium',budget:'cheap'},
+  {text:'go to a farmers market',tag:'outside',energy:'low',budget:'free'},
+  {text:'play a board game',tag:'group',energy:'low',budget:'free'},
+  {text:'go see live music',tag:'group',energy:'high',budget:'money'},
+  {text:'do a home workout',tag:'productive',energy:'high',budget:'free'},
+  {text:'journal',tag:'solo',energy:'low',budget:'free'},
+  {text:'go thrifting',tag:'solo',energy:'low',budget:'cheap'},
+  {text:'shoot hoops',tag:'outside',energy:'high',budget:'free'},
+  {text:'go to a drive-in',tag:'group',energy:'medium',budget:'cheap'},
+  {text:'have a picnic',tag:'group',energy:'low',budget:'cheap'},
+  {text:'go stargazing',tag:'outside',energy:'low',budget:'free'},
+  {text:'learn something on youtube',tag:'solo',energy:'low',budget:'free'},
+  {text:'clean and reorganize a space',tag:'productive',energy:'medium',budget:'free'},
+  {text:'go to a sporting event',tag:'group',energy:'high',budget:'money'},
+];
+
+function getAppSuggestions(count){
+  const existingTexts=ideas.map(i=>i.text.toLowerCase());
+  const available=SUGGESTED_IDEAS.filter(s=>!existingTexts.includes(s.text.toLowerCase()));
+  const shuffled=[...available].sort(()=>Math.random()-0.5);
+  return shuffled.slice(0,count);
+}
+
+function getFilteredAppSuggestions(){
+  // return app suggestions that match current energy and budget filters
+  const existingTexts=ideas.map(i=>i.text.toLowerCase());
+  let pool=SUGGESTED_IDEAS.filter(s=>!existingTexts.includes(s.text.toLowerCase()));
+  if(currentEnergy!=='medium'){
+    const matched=pool.filter(s=>s.energy===currentEnergy);
+    if(matched.length)pool=matched;
+  }
+  if(currentBudget!=='any'){
+    const matched=pool.filter(s=>s.budget===currentBudget);
+    if(matched.length)pool=matched;
+  }
+  return pool.sort(()=>Math.random()-0.5).slice(0,5);
+}
+
+function renderQuickAddList(){
+  const el=$('quick-add-list');if(!el)return;
+  const suggestions=getAppSuggestions(8);
+  el.innerHTML='';
+  suggestions.forEach(s=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:12px;border:0.5px solid var(--gray3);margin-bottom:8px;';
+    row.innerHTML=`
+      <div>
+        <div style="font-size:14px;color:var(--text);font-weight:500;">${s.text}</div>
+        <div style="font-size:11px;color:var(--gray);margin-top:2px;">${s.tag} · ${s.energy} energy · ${s.budget==='free'?'🪙 free':s.budget==='cheap'?'💵 cheap':'💳 costs money'}</div>
+      </div>
+      <button onclick="quickAdd(this,'${s.text}','${s.tag}','${s.energy}','${s.budget}')" style="background:var(--coral);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;margin-left:10px;">+ add</button>
+    `;
+    el.appendChild(row);
+  });
+  if(!suggestions.length){
+    el.innerHTML='<div style="text-align:center;color:var(--gray);font-size:14px;padding:20px;">you\'ve added everything we can suggest! nice work.</div>';
+  }
+}
+
+async function quickAdd(btn,text,tag,energy,budget){
+  btn.textContent='✓ added';
+  btn.style.background='var(--teal)';
+  btn.disabled=true;
+  await addDoc(collection(db,'ideas'),{
+    userId:currentUser.uid,text,tag,energy,budget,
+    dateAdded:serverTimestamp(),skipCount:0,isDone:false,
+    isSomeday:false,recurring:true,reminder:null,
+    repeat:'none',location:'',expires:null,isPrivate:false
+  });
+  // refresh remaining suggestions
+  setTimeout(()=>{
+    const row=btn.closest('div[style]');
+    if(row){row.style.opacity='0.4';}
+  },300);
+}
+window.quickAdd=quickAdd;
 
 // ── SEARCH ────────────────────────────────────────────────────────────────
 let searchQuery='';
@@ -1651,15 +1764,50 @@ function nextSug(){
   if(isGroupSuggest){
     const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length)return;
     let pool=[...(g.ideas||[])];
-    if(currentEnergy!=='medium'){const ef=pool.filter(i=>i.energy?i.energy===currentEnergy:true);if(ef.length)pool=ef;}
-    if(currentBudget!=='any'){const bf=pool.filter(i=>i.budget?i.budget===currentBudget:true);if(bf.length)pool=bf;}
+    if(currentEnergy!=='medium'){
+      const withE=pool.filter(i=>i.energy);
+      if(withE.length){const matched=withE.filter(i=>i.energy===currentEnergy);if(matched.length)pool=matched;else pool=withE;}
+    }
+    if(currentBudget!=='any'){
+      const withB=pool.filter(i=>i.budget);
+      if(withB.length){const matched=withB.filter(i=>i.budget===currentBudget);if(matched.length)pool=matched;else pool=withB;}
+    }
     const idea=pool[Math.floor(Math.random()*pool.length)];$('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;return;}
-  const pool=getPool();if(!pool.length)return;currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
+  const pool=getPool();
+  if(!pool.length){
+    // no matches — get a filtered app suggestion
+    const appSugs=getFilteredAppSuggestions();
+    if(appSugs.length){
+      const pick=appSugs[Math.floor(Math.random()*appSugs.length)];
+      $('sug-eye').textContent='suggested for you';
+      $('sug-title').textContent=pick.text;
+      $('sug-meta').textContent=pick.tag+' · '+pick.energy+' energy · '+(pick.budget==='free'?'free':pick.budget==='cheap'?'a little spending':'costs money');
+      $('skip-q').style.display='none';
+      doneSugText=pick.text;currentDetailId=null;doneSugRecurring=true;
+      window._pendingSuggestedIdea=pick;
+      const addBtn=$('sug-add-btn');if(addBtn){addBtn.style.display='inline-block';addBtn.textContent='+ add to list';addBtn.style.background='';addBtn.style.color='';addBtn.disabled=false;}
+    }
+    return;
+  }
+  currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
 }
 window.nextSug=nextSug;
 
 function skipIdea(){skipCount++;if(currentDetailId){const idea=ideas.find(i=>i.id===currentDetailId);if(idea)updateDoc(doc(db,'ideas',currentDetailId),{skipCount:(idea.skipCount||0)+1});}if(skipCount>=2)$('skip-q').style.display='block';nextSug();}
 window.skipIdea=skipIdea;
+
+async function addSuggestedToList(){
+  if(!window._pendingSuggestedIdea)return;
+  const s=window._pendingSuggestedIdea;
+  await addDoc(collection(db,'ideas'),{
+    userId:currentUser.uid,text:s.text,tag:s.tag,energy:s.energy,budget:s.budget,
+    dateAdded:serverTimestamp(),skipCount:0,isDone:false,
+    isSomeday:false,recurring:true,reminder:null,
+    repeat:'none',location:'',expires:null,isPrivate:false
+  });
+  const btn=$('sug-add-btn');if(btn){btn.textContent='✓ added';btn.style.background='var(--teal)';btn.style.color='#fff';btn.disabled=true;}
+}
+window.addSuggestedToList=addSuggestedToList;
 
 async function doIt(){
   haptic('success');
