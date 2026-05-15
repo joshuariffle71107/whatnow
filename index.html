@@ -561,15 +561,13 @@
     <div class="form-label" style="margin-bottom:8px;">type</div>
     <div style="display:flex;gap:7px;flex-wrap:wrap;" id="detail-type-pills"></div>
   </div>
-  <div class="detail-row"><span class="detail-label">added</span><span class="detail-val" id="detail-added"></span></div>
-  <div class="detail-row">
-    <span class="detail-label">energy level</span>
-    <div style="display:flex;gap:6px;" id="detail-energy-pills">
+  <div style="padding:0 20px 14px;">
+    <div class="form-label" style="margin-bottom:8px;">energy level</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;" id="detail-energy-pills">
       <button class="type-btn" onclick="selectDetailEnergy(this,'low')">😴 low</button>
       <button class="type-btn" onclick="selectDetailEnergy(this,'medium')">😊 medium</button>
       <button class="type-btn" onclick="selectDetailEnergy(this,'high')">⚡ high</button>
     </div>
-  </div>
   </div>
   <div style="padding:0 20px 14px;">
     <div class="form-label" style="margin-bottom:8px;">cost</div>
@@ -579,6 +577,7 @@
       <button class="type-btn" onclick="selectDetailBudget(this,'money')">💳 costs money</button>
     </div>
   </div>
+  <div class="detail-row"><span class="detail-label">added</span><span class="detail-val" id="detail-added"></span></div>
   <div class="detail-row">
     <span class="detail-label">recurring</span>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
@@ -610,7 +609,6 @@
     <button class="remove-btn" onclick="removeIdea()">remove idea</button>
   </div>
 </div>
-
 <!-- GROUPS -->
 <div id="s-groups" class="screen">
   <div class="topbar"><div class="topbar-left"><h1>groups</h1><p>shared lists with your people</p></div></div>
