@@ -494,6 +494,12 @@
       <button class="type-btn on" onclick="selectEnergy(this,'medium')">😊 medium</button>
       <button class="type-btn" onclick="selectEnergy(this,'high')">⚡ high</button>
     </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:var(--gray);margin-right:2px;">cost:</span>
+      <button class="type-btn on" onclick="selectBudget(this,'free')">🪙 free</button>
+      <button class="type-btn" onclick="selectBudget(this,'cheap')">💵 cheap</button>
+      <button class="type-btn" onclick="selectBudget(this,'money')">💳 costs money</button>
+    </div>
   </div>
 </div>
 
@@ -512,6 +518,15 @@
       <button class="energy-opt" onclick="energyPick(this,'low')">😴 low</button>
       <button class="energy-opt on" onclick="energyPick(this,'medium')">😊 medium</button>
       <button class="energy-opt" onclick="energyPick(this,'high')">⚡ high</button>
+    </div>
+  </div>
+  <div class="energy-wrap" style="margin-top:10px;">
+    <div class="energy-label">your budget?</div>
+    <div class="energy-opts">
+      <button class="energy-opt on" onclick="budgetPick(this,'any')">anything</button>
+      <button class="energy-opt" onclick="budgetPick(this,'free')">🪙 free</button>
+      <button class="energy-opt" onclick="budgetPick(this,'cheap')">💵 cheap</button>
+      <button class="energy-opt" onclick="budgetPick(this,'money')">💳 spending</button>
     </div>
   </div>
   <div class="sug-card">
@@ -655,6 +670,12 @@
       <button class="type-btn on" onclick="selectGroupAddEnergy(this,'medium')">😊 medium</button>
       <button class="type-btn" onclick="selectGroupAddEnergy(this,'high')">⚡ high</button>
     </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:var(--gray);margin-right:2px;">cost:</span>
+      <button class="type-btn on" onclick="selectGroupAddBudget(this,'free')">🪙 free</button>
+      <button class="type-btn" onclick="selectGroupAddBudget(this,'cheap')">💵 cheap</button>
+      <button class="type-btn" onclick="selectGroupAddBudget(this,'money')">💳 costs money</button>
+    </div>
   </div>
 </div>
 
@@ -697,6 +718,14 @@
       <button class="type-btn" onclick="selectGidEnergy(this,'low')">😴 low</button>
       <button class="type-btn on" onclick="selectGidEnergy(this,'medium')">😊 medium</button>
       <button class="type-btn" onclick="selectGidEnergy(this,'high')">⚡ high</button>
+    </div>
+  </div>
+  <div style="padding:0 20px 14px;">
+    <div class="form-label" style="margin-bottom:8px;">cost</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;" id="gid-budget-pills">
+      <button class="type-btn" onclick="selectGidBudget(this,'free')">🪙 free</button>
+      <button class="type-btn" onclick="selectGidBudget(this,'cheap')">💵 cheap</button>
+      <button class="type-btn" onclick="selectGidBudget(this,'money')">💳 costs money</button>
     </div>
   </div>
   <div class="detail-actions">
@@ -1359,6 +1388,11 @@ function getPool(){
     });
     if(byEnergy.length)pool=byEnergy;
   }
+  // filter by budget
+  if(currentBudget!=='any'){
+    const bf=pool.filter(i=>i.budget?i.budget===currentBudget:true);
+    if(bf.length)pool=bf;
+  }
   // Weight by user prefs — ideas matching preferred categories appear more often
   if(userPrefs&&pool.length>1){
     const weighted=[];
@@ -1452,6 +1486,41 @@ function showWalkthrough(){
   document.getElementById('wt-overlay').classList.remove('hidden');
 }
 window.showWalkthrough=showWalkthrough;
+
+
+// ── BUDGET ────────────────────────────────────────────────────────────────
+let selectedBudgetLevel='free',currentBudget='any',selectedGroupAddBudget_val='free';
+
+function selectBudget(el,level){
+  el.closest('div').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');selectedBudgetLevel=level;
+}
+window.selectBudget=selectBudget;
+
+function selectDetailBudget(el,level){
+  document.querySelectorAll('#detail-budget-pills .type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+window.selectDetailBudget=selectDetailBudget;
+
+function budgetPick(el,b){
+  document.querySelectorAll('.energy-wrap:nth-child(2) .energy-opt').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');currentBudget=b;
+  const pool=getPool();if(pool.length)showSug(pool[Math.floor(Math.random()*pool.length)]);
+}
+window.budgetPick=budgetPick;
+
+function selectGroupAddBudget(el,level){
+  el.closest('div').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');selectedGroupAddBudget_val=level;
+}
+window.selectGroupAddBudget=selectGroupAddBudget;
+
+function selectGidBudget(el,level){
+  document.querySelectorAll('#gid-budget-pills .type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+window.selectGidBudget=selectGidBudget;
 
 // ── SEARCH ────────────────────────────────────────────────────────────────
 let searchQuery='';
@@ -1576,6 +1645,7 @@ function nextSug(){
     const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length)return;
     let pool=[...(g.ideas||[])];
     if(currentEnergy!=='medium'){const ef=pool.filter(i=>i.energy?i.energy===currentEnergy:true);if(ef.length)pool=ef;}
+    if(currentBudget!=='any'){const bf=pool.filter(i=>i.budget?i.budget===currentBudget:true);if(bf.length)pool=bf;}
     const idea=pool[Math.floor(Math.random()*pool.length)];$('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;return;}
   const pool=getPool();if(!pool.length)return;currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
 }
@@ -1619,7 +1689,7 @@ window.selectDetailEnergy=selectDetailEnergy;
 async function addIdea(){
   const inp=$('new-idea');const val=inp.value.trim();if(!val)return;
   
-  await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,tag:selectedType,energy:selectedEnergyLevel,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});
+  await addDoc(collection(db,'ideas'),{userId:currentUser.uid,text:val,tag:selectedType,energy:selectedEnergyLevel,budget:selectedBudgetLevel,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false});
   inp.value='';
   // reset type picker
   const typeBtns=document.querySelectorAll('#s-home .type-btn');
@@ -1627,7 +1697,8 @@ async function addIdea(){
   // reset to defaults
   document.querySelector('#s-home [onclick*="selectType"][onclick*="solo"]').classList.add('on');
   document.querySelector('#s-home [onclick*="selectEnergy"][onclick*="medium"]').classList.add('on');
-  selectedType='solo';selectedEnergyLevel='medium';
+  selectedType='solo';selectedEnergyLevel='medium';selectedBudgetLevel='free';
+  const bb=document.querySelector('#s-home [onclick*="selectBudget"][onclick*="free"]');if(bb){document.querySelectorAll('#s-home [onclick*="selectBudget"]').forEach(b=>b.classList.remove('on'));bb.classList.add('on');}
 }
 window.addIdea=addIdea;
 
@@ -1638,12 +1709,13 @@ async function addGroupIdea(){
   const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;
   
   const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
-  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,energy:selectedGroupAddEnergy_val,addedBy:currentUsername,dateAdded:new Date().toISOString()}]});
+  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,energy:selectedGroupAddEnergy_val,budget:selectedGroupAddBudget_val,addedBy:currentUsername,dateAdded:new Date().toISOString()}]});
   inp.value='';
   // reset pickers
   document.querySelectorAll('#s-groupdetail .type-btn').forEach(b=>b.classList.remove('on'));
   const medBtn=document.querySelector('#s-groupdetail [onclick*="medium"]');if(medBtn)medBtn.classList.add('on');
-  selectedGroupType='group';selectedGroupAddEnergy_val='medium';
+  selectedGroupType='group';selectedGroupAddEnergy_val='medium';selectedGroupAddBudget_val='free';
+  const gb=document.querySelector('#s-groupdetail [onclick*="selectGroupAddBudget"][onclick*="free"]');if(gb){document.querySelectorAll('#s-groupdetail [onclick*="selectGroupAddBudget"]').forEach(b=>b.classList.remove('on'));gb.classList.add('on');}
 }
 window.addGroupIdea=addGroupIdea;
 
@@ -1659,6 +1731,12 @@ function openDetail(id){
   const ideaEnergy=idea.energy||'medium';
   const epBtn=document.querySelector(`#detail-energy-pills .type-btn[onclick*="${ideaEnergy}"]`);
   if(epBtn)epBtn.classList.add('on');
+  // budget
+  const bp=document.querySelectorAll('#detail-budget-pills .type-btn');
+  bp.forEach(b=>b.classList.remove('on'));
+  const ideaBudget=idea.budget||'free';
+  const bpBtn=document.querySelector(`#detail-budget-pills .type-btn[onclick*="${ideaBudget}"]`);
+  if(bpBtn)bpBtn.classList.add('on');
   const rec=idea.recurring!==false;const tog=$('recurring-toggle');tog.classList.toggle('on',rec);tog.querySelector('.toggle-knob').style.left=rec?'20px':'2px';$('recurring-label').textContent=rec?'stays on list after done':'removed after done';
   $('detail-reminder').value=idea.reminder||'';$('detail-repeat').value=idea.repeat||'none';$('detail-location').value=idea.location||'';$('detail-expires').value=idea.expires||'';
   const pt=$('priv-toggle');pt.classList.toggle('on',!!idea.isPrivate);pt.querySelector('.toggle-knob').style.left=idea.isPrivate?'20px':'2px';
@@ -1671,7 +1749,9 @@ async function saveDetail(){
   const activeEnergyBtn=document.querySelector('#detail-energy-pills .type-btn.on');
   const newEnergy=activeEnergyBtn?(['low','medium','high'].find(e=>activeEnergyBtn.getAttribute('onclick').includes(e))||'medium'):'medium';
   const recurring=$('recurring-toggle').classList.contains('on');
-  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,energy:newEnergy,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});
+  const activeBudgetBtn=document.querySelector('#detail-budget-pills .type-btn.on');
+  const newBudget=activeBudgetBtn?(['free','cheap','money'].find(b=>activeBudgetBtn.getAttribute('onclick').includes(b))||'free'):'free';
+  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,energy:newEnergy,budget:newBudget,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});
   goTo('s-home');
 }
 window.saveDetail=saveDetail;
@@ -1716,7 +1796,9 @@ async function saveGroupIdea(){
   const newTag=document.querySelector('#gid-type-pills .type-btn.on')?.textContent||'group';
   const activeGidE=document.querySelector('#gid-energy-pills .type-btn.on');
   const newGidEnergy=activeGidE?(['low','medium','high'].find(e=>activeGidE.getAttribute('onclick').includes(e))||'medium'):'medium';
-  const updatedIdeas=(g.ideas||[]).map(i=>i.id===currentGroupIdeaId?{...i,text:newText,tag:newTag,energy:newGidEnergy}:i);
+  const activeGidB=document.querySelector('#gid-budget-pills .type-btn.on');
+  const newGidBudget=activeGidB?(['free','cheap','money'].find(b=>activeGidB.getAttribute('onclick').includes(b))||'free'):'free';
+  const updatedIdeas=(g.ideas||[]).map(i=>i.id===currentGroupIdeaId?{...i,text:newText,tag:newTag,energy:newGidEnergy,budget:newGidBudget}:i);
   await updateDoc(doc(db,'groups',currentGroupId),{ideas:updatedIdeas});goTo('s-groupdetail');
 }
 window.saveGroupIdea=saveGroupIdea;
