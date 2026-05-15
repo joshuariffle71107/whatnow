@@ -1746,36 +1746,75 @@ function triggerGroupTransition(){
   },2400);
 }
 
-function goSuggestGroup(){
-  const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}
-  isGroupSuggest=true;
-  // filter by energy if not medium
-  let pool=[...(g.ideas||[])];
+
+function getGroupPool(ideas){
+  let pool=[...ideas];
+  // energy — only filter if ideas have energy set
   if(currentEnergy!=='medium'){
-    const filtered=pool.filter(i=>i.energy?i.energy===currentEnergy:true);
-    if(filtered.length)pool=filtered;
+    const withE=pool.filter(i=>i.energy);
+    if(withE.length){
+      const matched=withE.filter(i=>i.energy===currentEnergy);
+      pool=matched.length?matched:withE;
+    }
   }
-  const idea=pool[Math.floor(Math.random()*pool.length)];
-  $('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;doneSugRecurring=true;goTo('s-suggest');
+  // budget — only filter if ideas have budget set
+  if(currentBudget!=='any'){
+    const withB=pool.filter(i=>i.budget);
+    if(withB.length){
+      const matched=withB.filter(i=>i.budget===currentBudget);
+      pool=matched.length?matched:withB;
+    }
+  }
+  return pool;
+}
+
+function showGroupSug(idea){
+  const labels={solo:'solo activity',group:'group hangout',productive:'productive task',outside:'get outside',free:'free & easy'};
+  $('sug-eye').textContent=labels[idea.tag]||'group hangout';
+  $('sug-title').textContent=idea.text;
+  const energyLabel=idea.energy?` · ${idea.energy} energy`:'';
+  const budgetLabel=idea.budget?` · ${idea.budget==='free'?'🪙 free':idea.budget==='cheap'?'💵 cheap':'💳 costs money'}`:'';
+  $('sug-meta').textContent='from group list'+energyLabel+budgetLabel;
+  $('skip-q').style.display='none';
+  doneSugText=idea.text;currentDetailId=null;doneSugRecurring=true;
+  window._pendingSuggestedIdea=null;
+  const addBtn=$('sug-add-btn');if(addBtn)addBtn.style.display='none';
+}
+
+function goSuggestGroup(){
+  const g=groups.find(x=>x.id===currentGroupId);
+  if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}
+  isGroupSuggest=true;
+  const pool=getGroupPool(g.ideas||[]);
+  if(!pool.length){
+    $('sug-eye').textContent='no match';
+    $('sug-title').textContent='nothing matches those filters.';
+    $('sug-meta').textContent='try adjusting your energy or budget on the suggestion screen.';
+    $('skip-q').style.display='none';
+    window._pendingSuggestedIdea=null;
+    const addBtn=$('sug-add-btn');if(addBtn)addBtn.style.display='none';
+    goTo('s-suggest');return;
+  }
+  showGroupSug(pool[Math.floor(Math.random()*pool.length)]);
+  goTo('s-suggest');
 }
 window.goSuggestGroup=goSuggestGroup;
 
 function nextSug(){
   if(isGroupSuggest){
     const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length)return;
-    let pool=[...(g.ideas||[])];
-    if(currentEnergy!=='medium'){
-      const withE=pool.filter(i=>i.energy);
-      if(withE.length){const matched=withE.filter(i=>i.energy===currentEnergy);if(matched.length)pool=matched;else pool=withE;}
+    const pool=getGroupPool(g.ideas||[]);
+    if(!pool.length){
+      $('sug-eye').textContent='no match';
+      $('sug-title').textContent='nothing matches those filters.';
+      $('sug-meta').textContent='try adjusting your energy or budget.';
+      return;
     }
-    if(currentBudget!=='any'){
-      const withB=pool.filter(i=>i.budget);
-      if(withB.length){const matched=withB.filter(i=>i.budget===currentBudget);if(matched.length)pool=matched;else pool=withB;}
-    }
-    const idea=pool[Math.floor(Math.random()*pool.length)];$('sug-eye').textContent='group hangout';$('sug-title').textContent=idea.text;$('sug-meta').textContent='from group list';$('skip-q').style.display='none';doneSugText=idea.text;currentDetailId=null;return;}
+    showGroupSug(pool[Math.floor(Math.random()*pool.length)]);
+    return;
+  }
   const pool=getPool();
   if(!pool.length){
-    // no matches — get a filtered app suggestion
     const appSugs=getFilteredAppSuggestions();
     if(appSugs.length){
       const pick=appSugs[Math.floor(Math.random()*appSugs.length)];
