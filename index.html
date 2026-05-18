@@ -1416,28 +1416,27 @@ function getPool(){
   const energyChain=getEnergyChain(currentEnergy);
   const budgetChain=getBudgetChain(currentBudget);
 
-  // strict energy filter — only ideas with energy explicitly set
+  // STRICT energy filter — primary energy only, no cross-contamination
   const withEnergy=pool.filter(i=>i.energy);
   if(withEnergy.length){
-    // try primary energy first
-    let matched=withEnergy.filter(i=>i.energy===energyChain[0]);
-    if(!matched.length&&energyChain.length>1){
-      // fallback to secondary energy (e.g. medium for high, low for medium)
-      matched=withEnergy.filter(i=>i.energy===energyChain[1]);
-    }
-    if(matched.length)pool=matched;
-    else pool=withEnergy;
+    const matched=withEnergy.filter(i=>i.energy===energyChain[0]);
+    // if no primary match — return empty, trigger empty state
+    pool=matched.length?matched:[];
   }
-  // else: no ideas have energy set — show all
+  // else: no ideas have energy set at all — show all
 
-  // strict budget filter — only ideas with budget explicitly set
-  const withBudget=pool.filter(i=>i.budget);
-  if(withBudget.length&&currentBudget!=='any'){
-    let matched=withBudget.filter(i=>i.budget===budgetChain[0]);
-    if(!matched.length&&budgetChain.length>1){
-      matched=withBudget.filter(i=>i.budget===budgetChain[1]);
+  // STRICT budget filter — primary budget only, fallback one level
+  if(pool.length&&currentBudget!=='any'){
+    const withBudget=pool.filter(i=>i.budget);
+    if(withBudget.length){
+      let matched=withBudget.filter(i=>i.budget===budgetChain[0]);
+      if(!matched.length&&budgetChain.length>1){
+        // budget can fall back one level (cheap→free, money→cheap) but not two
+        matched=withBudget.filter(i=>i.budget===budgetChain[1]);
+      }
+      // if no budget match at all — return empty
+      pool=matched.length?matched:[];
     }
-    if(matched.length)pool=matched;
   }
 
   // weight by user prefs
@@ -1448,6 +1447,26 @@ function getPool(){
       for(let i=0;i<Math.max(1,Math.min(3,Math.round(w)));i++)weighted.push(idea);
     });
     return weighted;
+  }
+  return pool;
+}
+
+// get fallback pool — used by nextSug after primary pool is exhausted
+function getFallbackPool(){
+  const energyChain=getEnergyChain(currentEnergy);
+  const budgetChain=getBudgetChain(currentBudget);
+  if(energyChain.length<2)return[]; // low has no fallback
+  // secondary energy only
+  let pool=ideas.filter(i=>i.energy===energyChain[1]);
+  if(!pool.length)return[];
+  // budget filter on fallback
+  if(currentBudget!=='any'){
+    const withB=pool.filter(i=>i.budget);
+    if(withB.length){
+      let matched=withB.filter(i=>i.budget===budgetChain[0]);
+      if(!matched.length&&budgetChain.length>1)matched=withB.filter(i=>i.budget===budgetChain[1]);
+      if(matched.length)pool=matched;
+    }
   }
   return pool;
 }
@@ -1747,6 +1766,7 @@ window.goSuggest=function(){
   isGroupSuggest=false;
   window._pendingSuggestedIdea=null;
   window._suggestMode='normal';
+  window._fallbackShown=0;
 
   // show suggestion card, hide empty state
   const card=$('sug-card');const empty=$('sug-empty');
@@ -1774,14 +1794,9 @@ window.goSuggest=function(){
   goTo('s-suggest');
 };
 
-// check if primary energy has direct matches (no fallback)
+// check if pool would have any results
 function hasStrictMatch(){
-  const energyChain=getEnergyChain(currentEnergy);
-  const budgetChain=getBudgetChain(currentBudget);
-  // check if at least one idea matches primary energy
-  const primaryE=ideas.filter(i=>i.energy===energyChain[0]);
-  if(!primaryE.length&&ideas.filter(i=>i.energy).length>0)return false;
-  return true;
+  return getPool().length>0;
 }
 
 function showEnergyEmpty(){
@@ -1918,22 +1933,27 @@ function triggerGroupTransition(){
 }
 
 
-function getGroupPool(ideas){
-  let pool=[...ideas];
-  // energy — only filter if ideas have energy set
-  if(currentEnergy!=='medium'){
-    const withE=pool.filter(i=>i.energy);
-    if(withE.length){
-      const matched=withE.filter(i=>i.energy===currentEnergy);
-      pool=matched.length?matched:withE;
-    }
+function getGroupPool(groupIdeas){
+  let pool=[...groupIdeas];
+  const energyChain=getEnergyChain(currentEnergy);
+  const budgetChain=getBudgetChain(currentBudget);
+
+  // STRICT energy — primary only, no fallback
+  const withE=pool.filter(i=>i.energy);
+  if(withE.length){
+    const matched=withE.filter(i=>i.energy===energyChain[0]);
+    pool=matched.length?matched:[];
   }
-  // budget — only filter if ideas have budget set
-  if(currentBudget!=='any'){
+
+  // STRICT budget — primary, one level fallback
+  if(pool.length&&currentBudget!=='any'){
     const withB=pool.filter(i=>i.budget);
     if(withB.length){
-      const matched=withB.filter(i=>i.budget===currentBudget);
-      pool=matched.length?matched:withB;
+      let matched=withB.filter(i=>i.budget===budgetChain[0]);
+      if(!matched.length&&budgetChain.length>1){
+        matched=withB.filter(i=>i.budget===budgetChain[1]);
+      }
+      pool=matched.length?matched:[];
     }
   }
   return pool;
