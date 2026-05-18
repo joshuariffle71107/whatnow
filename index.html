@@ -926,6 +926,7 @@ const tagColors={solo:CORAL,group:TEAL,productive:AMBER,outside:GREEN,free:GRAY}
 const tagClasses={solo:'tag-solo',group:'tag-group',productive:'tag-productive',outside:'tag-outside',free:'tag-free'};
 const ageBorderColors=['#E8DDD9','#D4A090','#C07060','#A84030'];
 
+let _appSugQueue=[];
 let currentUser=null,currentUsername='',ideas=[],somedays=[],groups=[],currentFilter='anything',currentSugIdx=0,currentDetailId=null,currentGroupId=null,currentGroupIdeaId=null,currentEnergy='medium',skipCount=0,doneSugText='',doneSugRecurring=true,isGroupSuggest=false,unsubIdeas=null,unsubSomedays=null,unsubGroups=null,usernameCheckTimer=null,editUsernameCheckTimer=null,editFieldType='',selectedType='solo';
 let btnPressed=false,btnTransitioning=false;
 
@@ -1397,25 +1398,49 @@ async function loadUserPrefs(){
   if(p.exists()&&p.data().prefs)userPrefs=p.data().prefs;
 }
 
+// Budget fallback chain: spending->cheap->free, cheap->free, free->free only
+// Energy fallback chain: high->medium(fallback), medium->low(fallback), low->low only
+function getBudgetChain(budget){
+  if(budget==='money')return['money','cheap'];
+  if(budget==='cheap')return['cheap','free'];
+  return['free'];
+}
+function getEnergyChain(energy){
+  if(energy==='high')return['high','medium'];
+  if(energy==='medium')return['medium','low'];
+  return['low'];
+}
+
 function getPool(){
   let pool=[...ideas];
-  // filter by idea's own energy field — only filter if idea has energy set
-  if(currentEnergy!=='medium'){
-    const withEnergy=pool.filter(i=>i.energy);
-    if(withEnergy.length){
-      // if ideas have energy set, only show matching ones
-      const matched=withEnergy.filter(i=>i.energy===currentEnergy);
-      if(matched.length)pool=matched;
-      else pool=withEnergy; // no exact match, show all with energy set
+  const energyChain=getEnergyChain(currentEnergy);
+  const budgetChain=getBudgetChain(currentBudget);
+
+  // strict energy filter — only ideas with energy explicitly set
+  const withEnergy=pool.filter(i=>i.energy);
+  if(withEnergy.length){
+    // try primary energy first
+    let matched=withEnergy.filter(i=>i.energy===energyChain[0]);
+    if(!matched.length&&energyChain.length>1){
+      // fallback to secondary energy (e.g. medium for high, low for medium)
+      matched=withEnergy.filter(i=>i.energy===energyChain[1]);
     }
-    // if no ideas have energy set at all, show everything
+    if(matched.length)pool=matched;
+    else pool=withEnergy;
   }
-  // filter by budget
-  if(currentBudget!=='any'){
-    const bf=pool.filter(i=>i.budget?i.budget===currentBudget:true);
-    if(bf.length)pool=bf;
+  // else: no ideas have energy set — show all
+
+  // strict budget filter — only ideas with budget explicitly set
+  const withBudget=pool.filter(i=>i.budget);
+  if(withBudget.length&&currentBudget!=='any'){
+    let matched=withBudget.filter(i=>i.budget===budgetChain[0]);
+    if(!matched.length&&budgetChain.length>1){
+      matched=withBudget.filter(i=>i.budget===budgetChain[1]);
+    }
+    if(matched.length)pool=matched;
   }
-  // Weight by user prefs — ideas matching preferred categories appear more often
+
+  // weight by user prefs
   if(userPrefs&&pool.length>1){
     const weighted=[];
     pool.forEach(idea=>{
@@ -1425,6 +1450,14 @@ function getPool(){
     return weighted;
   }
   return pool;
+}
+
+// Check if user has ANY ideas matching primary energy (strict — no fallback)
+function hasIdeasForEnergy(energy){
+  return ideas.filter(i=>i.energy===energy).length>0;
+}
+function hasIdeasForBudget(budget){
+  return ideas.filter(i=>i.budget===budget).length>0;
 }
 
 function showSug(idea){
@@ -1530,7 +1563,14 @@ window.selectDetailBudget=selectDetailBudget;
 function budgetPick(el,b){
   document.querySelectorAll('.energy-wrap:nth-child(2) .energy-opt').forEach(x=>x.classList.remove('on'));
   el.classList.add('on');currentBudget=b;
-  const pool=getPool();if(pool.length)showSug(pool[Math.floor(Math.random()*pool.length)]);
+  window._suggestMode='normal';window._pendingSuggestedIdea=null;skipCount=0;
+  _appSugQueue=[];
+  const card=$('sug-card');const empty=$('sug-empty');
+  if(card)card.style.display='block';if(empty)empty.style.display='none';
+  const pool=getPool();
+  if(!pool.length||!hasStrictMatch()){showEnergyEmpty();return;}
+  currentSugIdx=Math.floor(Math.random()*pool.length);
+  showSug(pool[currentSugIdx]);
 }
 window.budgetPick=budgetPick;
 
@@ -1549,36 +1589,65 @@ window.selectGidBudget=selectGidBudget;
 
 // ── SUGGESTED IDEAS ───────────────────────────────────────────────────────
 const SUGGESTED_IDEAS=[
-  {text:'go for a walk',tag:'outside',energy:'low',budget:'free'},
+  // LOW ENERGY + FREE (broke) — genuinely chill, zero effort, zero cost
   {text:'watch a movie',tag:'solo',energy:'low',budget:'free'},
-  {text:'call a friend',tag:'solo',energy:'low',budget:'free'},
-  {text:'try a new recipe',tag:'solo',energy:'medium',budget:'cheap'},
-  {text:'go to the gym',tag:'productive',energy:'high',budget:'free'},
-  {text:'explore a new neighborhood',tag:'outside',energy:'medium',budget:'free'},
-  {text:'game night with friends',tag:'group',energy:'high',budget:'free'},
   {text:'read a book',tag:'solo',energy:'low',budget:'free'},
-  {text:'go to a coffee shop',tag:'solo',energy:'low',budget:'cheap'},
-  {text:'try a new restaurant',tag:'group',energy:'medium',budget:'money'},
-  {text:'go hiking',tag:'outside',energy:'high',budget:'free'},
   {text:'watch a documentary',tag:'solo',energy:'low',budget:'free'},
-  {text:'go bowling',tag:'group',energy:'medium',budget:'cheap'},
-  {text:'visit a museum',tag:'outside',energy:'medium',budget:'cheap'},
-  {text:'do a puzzle',tag:'solo',energy:'low',budget:'free'},
-  {text:'go to the park',tag:'outside',energy:'low',budget:'free'},
-  {text:'cook a new dish',tag:'solo',energy:'medium',budget:'cheap'},
-  {text:'go to a farmers market',tag:'outside',energy:'low',budget:'free'},
-  {text:'play a board game',tag:'group',energy:'low',budget:'free'},
-  {text:'go see live music',tag:'group',energy:'high',budget:'money'},
-  {text:'do a home workout',tag:'productive',energy:'high',budget:'free'},
   {text:'journal',tag:'solo',energy:'low',budget:'free'},
-  {text:'go thrifting',tag:'solo',energy:'low',budget:'cheap'},
-  {text:'shoot hoops',tag:'outside',energy:'high',budget:'free'},
-  {text:'go to a drive-in',tag:'group',energy:'medium',budget:'cheap'},
-  {text:'have a picnic',tag:'group',energy:'low',budget:'cheap'},
+  {text:'listen to a podcast',tag:'solo',energy:'low',budget:'free'},
+  {text:'take a nap',tag:'solo',energy:'low',budget:'free'},
   {text:'go stargazing',tag:'outside',energy:'low',budget:'free'},
+  {text:'sit outside and do nothing',tag:'outside',energy:'low',budget:'free'},
+  {text:'go for a slow walk',tag:'outside',energy:'low',budget:'free'},
+  {text:'play a board game at home',tag:'group',energy:'low',budget:'free'},
+  {text:'call a friend and just talk',tag:'solo',energy:'low',budget:'free'},
+  {text:'do a puzzle',tag:'solo',energy:'low',budget:'free'},
+  {text:'go to the park and sit',tag:'outside',energy:'low',budget:'free'},
   {text:'learn something on youtube',tag:'solo',energy:'low',budget:'free'},
+  {text:'sketch or doodle',tag:'solo',energy:'low',budget:'free'},
+  // LOW ENERGY + CHEAP — easy but involves a little spending
+  {text:'go to a coffee shop and chill',tag:'solo',energy:'low',budget:'cheap'},
+  {text:'grab a snack and watch something',tag:'solo',energy:'low',budget:'cheap'},
+  {text:'go thrifting',tag:'solo',energy:'low',budget:'cheap'},
+  {text:'go to a farmers market',tag:'outside',energy:'low',budget:'cheap'},
+  {text:'have a picnic',tag:'group',energy:'low',budget:'cheap'},
+  // MEDIUM ENERGY + FREE — requires some motivation, no money needed
+  {text:'explore a new neighborhood',tag:'outside',energy:'medium',budget:'free'},
+  {text:'go for a bike ride',tag:'outside',energy:'medium',budget:'free'},
+  {text:'cook a new recipe at home',tag:'solo',energy:'medium',budget:'free'},
   {text:'clean and reorganize a space',tag:'productive',energy:'medium',budget:'free'},
+  {text:'do a home workout',tag:'productive',energy:'medium',budget:'free'},
+  {text:'visit a free museum or gallery',tag:'outside',energy:'medium',budget:'free'},
+  {text:'have friends over',tag:'group',energy:'medium',budget:'free'},
+  {text:'go to the library',tag:'solo',energy:'medium',budget:'free'},
+  {text:'take a photography walk',tag:'outside',energy:'medium',budget:'free'},
+  // MEDIUM ENERGY + CHEAP — some effort, some spending
+  {text:'go bowling',tag:'group',energy:'medium',budget:'cheap'},
+  {text:'try a new restaurant',tag:'group',energy:'medium',budget:'cheap'},
+  {text:'go to a drive-in',tag:'group',energy:'medium',budget:'cheap'},
+  {text:'visit a museum',tag:'outside',energy:'medium',budget:'cheap'},
+  {text:'go see a movie in theaters',tag:'group',energy:'medium',budget:'cheap'},
+  {text:'go mini golfing',tag:'group',energy:'medium',budget:'cheap'},
+  {text:'take a day trip somewhere nearby',tag:'outside',energy:'medium',budget:'cheap'},
+  // HIGH ENERGY + FREE — active, social, real effort, no money
+  {text:'go hiking',tag:'outside',energy:'high',budget:'free'},
+  {text:'shoot hoops',tag:'outside',energy:'high',budget:'free'},
+  {text:'go for a run',tag:'outside',energy:'high',budget:'free'},
+  {text:'play pickup basketball',tag:'group',energy:'high',budget:'free'},
+  {text:'go to the gym',tag:'productive',energy:'high',budget:'free'},
+  {text:'go swimming',tag:'outside',energy:'high',budget:'free'},
+  {text:'organize a group hangout',tag:'group',energy:'high',budget:'free'},
+  // HIGH ENERGY + CHEAP — active and costs a little
+  {text:'go rock climbing at a gym',tag:'group',energy:'high',budget:'cheap'},
+  {text:'go to a trampoline park',tag:'group',energy:'high',budget:'cheap'},
+  {text:'go axe throwing',tag:'group',energy:'high',budget:'cheap'},
+  {text:'go to an escape room',tag:'group',energy:'high',budget:'cheap'},
+  // HIGH ENERGY + MONEY — big plans, spending money
+  {text:'go see live music',tag:'group',energy:'high',budget:'money'},
   {text:'go to a sporting event',tag:'group',energy:'high',budget:'money'},
+  {text:'go to an amusement park',tag:'group',energy:'high',budget:'money'},
+  {text:'plan a weekend trip',tag:'group',energy:'high',budget:'money'},
+  {text:'go to a concert',tag:'group',energy:'high',budget:'money'},
 ];
 
 function getAppSuggestions(count){
@@ -1588,20 +1657,7 @@ function getAppSuggestions(count){
   return shuffled.slice(0,count);
 }
 
-function getFilteredAppSuggestions(){
-  // return app suggestions that match current energy and budget filters
-  const existingTexts=ideas.map(i=>i.text.toLowerCase());
-  let pool=SUGGESTED_IDEAS.filter(s=>!existingTexts.includes(s.text.toLowerCase()));
-  if(currentEnergy!=='medium'){
-    const matched=pool.filter(s=>s.energy===currentEnergy);
-    if(matched.length)pool=matched;
-  }
-  if(currentBudget!=='any'){
-    const matched=pool.filter(s=>s.budget===currentBudget);
-    if(matched.length)pool=matched;
-  }
-  return pool.sort(()=>Math.random()-0.5).slice(0,5);
-}
+
 
 function renderQuickAddList(){
   const el=$('quick-add-list');if(!el)return;
@@ -1679,7 +1735,114 @@ function getOnboardPreferences(selectedTexts){
 function goBackFromSuggest(){if(isGroupSuggest){goTo('s-groupdetail');}else{goTo('s-home');}}
 window.goBackFromSuggest=goBackFromSuggest;
 
-window.goSuggest=function(){const pool=getPool();if(!pool.length){alert('add some ideas first!');return;}isGroupSuggest=false;currentSugIdx=Math.floor(Math.random()*pool.length);showSug(pool[currentSugIdx]);goTo('s-suggest');};
+window.goSuggest=function(){
+  isGroupSuggest=false;
+  window._pendingSuggestedIdea=null;
+  window._suggestMode='normal';
+
+  // show suggestion card, hide empty state
+  const card=$('sug-card');const empty=$('sug-empty');
+  if(card)card.style.display='block';
+  if(empty)empty.style.display='none';
+
+  // fewer than 3 ideas — nudge screen
+  if(ideas.length<3){
+    renderQuickAddList();
+    goTo('s-addmore');
+    return;
+  }
+
+  const pool=getPool();
+
+  // pool is empty — strict check: do they have ANY ideas for this energy?
+  if(!pool.length||!hasStrictMatch()){
+    showEnergyEmpty();
+    goTo('s-suggest');
+    return;
+  }
+
+  currentSugIdx=Math.floor(Math.random()*pool.length);
+  showSug(pool[currentSugIdx]);
+  goTo('s-suggest');
+};
+
+// check if primary energy has direct matches (no fallback)
+function hasStrictMatch(){
+  const energyChain=getEnergyChain(currentEnergy);
+  const budgetChain=getBudgetChain(currentBudget);
+  // check if at least one idea matches primary energy
+  const primaryE=ideas.filter(i=>i.energy===energyChain[0]);
+  if(!primaryE.length&&ideas.filter(i=>i.energy).length>0)return false;
+  return true;
+}
+
+function showEnergyEmpty(){
+  const card=$('sug-card');const empty=$('sug-empty');
+  if(card)card.style.display='none';
+  if(empty)empty.style.display='block';
+  const icon=$('sug-empty-icon');
+  const title=$('sug-empty-title');
+  const body=$('sug-empty-body');
+  const energyLabel=currentEnergy==='low'?'low energy':currentEnergy==='medium'?'medium energy':'high energy';
+  const budgetLabel=currentBudget==='free'?'free':currentBudget==='cheap'?'cheap':currentBudget==='money'?'that costs money':'any budget';
+  const energyIcon=currentEnergy==='low'?'😴':currentEnergy==='medium'?'😊':'⚡';
+  if(icon)icon.textContent=energyIcon;
+  if(title)title.textContent=`no ${energyLabel} ideas yet.`;
+  if(body)body.textContent=`you haven't added any ${energyLabel}${currentBudget!=='any'?' and '+budgetLabel:''} ideas to your list. want some suggestions?`;
+  window._suggestMode='empty';
+}
+
+function acceptEmptySuggestions(){
+  window._suggestMode='appsuggestions';
+  const card=$('sug-card');const empty=$('sug-empty');
+  if(card)card.style.display='block';
+  if(empty)empty.style.display='none';
+  showNextAppSuggestion();
+}
+window.acceptEmptySuggestions=acceptEmptySuggestions;
+
+function declineEmptySuggestions(){
+  goTo('s-home');
+}
+window.declineEmptySuggestions=declineEmptySuggestions;
+
+function getFilteredAppSuggestions(){
+  const existingTexts=ideas.map(i=>i.text.toLowerCase());
+  const energyChain=getEnergyChain(currentEnergy);
+  const budgetChain=getBudgetChain(currentBudget);
+  let pool=SUGGESTED_IDEAS.filter(s=>!existingTexts.includes(s.text.toLowerCase()));
+  // strict primary energy match
+  let matched=pool.filter(s=>s.energy===energyChain[0]);
+  if(!matched.length&&energyChain.length>1)matched=pool.filter(s=>s.energy===energyChain[1]);
+  if(matched.length)pool=matched;
+  // budget filter
+  if(currentBudget!=='any'){
+    let bmatched=pool.filter(s=>s.budget===budgetChain[0]);
+    if(!bmatched.length&&budgetChain.length>1)bmatched=pool.filter(s=>s.budget===budgetChain[1]);
+    if(bmatched.length)pool=bmatched;
+  }
+  return pool.sort(()=>Math.random()-0.5);
+}
+
+function showNextAppSuggestion(){
+  if(!_appSugQueue.length)_appSugQueue=getFilteredAppSuggestions();
+  if(!_appSugQueue.length){
+    $('sug-title').textContent='no more suggestions.';
+    $('sug-eye').textContent='all out';
+    $('sug-meta').textContent='try adding your own ideas.';
+    const addBtn=$('sug-add-btn');if(addBtn)addBtn.style.display='none';
+    return;
+  }
+  const pick=_appSugQueue.shift();
+  window._pendingSuggestedIdea=pick;
+  $('sug-eye').textContent='suggested for you';
+  $('sug-title').textContent=pick.text;
+  $('sug-meta').textContent=pick.tag+' · '+pick.energy+' energy · '+(pick.budget==='free'?'🪙 free':pick.budget==='cheap'?'💵 cheap':'💳 costs money');
+  $('skip-q').style.display='none';
+  doneSugText=pick.text;currentDetailId=null;doneSugRecurring=true;
+  const addBtn=$('sug-add-btn');
+  if(addBtn){addBtn.style.display='inline-block';addBtn.textContent='+ add to list';addBtn.style.background='';addBtn.style.color='';addBtn.disabled=false;}
+}
 
 
 // ── GROUP BUTTON PRESS ────────────────────────────────────────────────────
@@ -1813,22 +1976,24 @@ function nextSug(){
     showGroupSug(pool[Math.floor(Math.random()*pool.length)]);
     return;
   }
-  const pool=getPool();
-  if(!pool.length){
-    const appSugs=getFilteredAppSuggestions();
-    if(appSugs.length){
-      const pick=appSugs[Math.floor(Math.random()*appSugs.length)];
-      $('sug-eye').textContent='suggested for you';
-      $('sug-title').textContent=pick.text;
-      $('sug-meta').textContent=pick.tag+' · '+pick.energy+' energy · '+(pick.budget==='free'?'free':pick.budget==='cheap'?'a little spending':'costs money');
-      $('skip-q').style.display='none';
-      doneSugText=pick.text;currentDetailId=null;doneSugRecurring=true;
-      window._pendingSuggestedIdea=pick;
-      const addBtn=$('sug-add-btn');if(addBtn){addBtn.style.display='inline-block';addBtn.textContent='+ add to list';addBtn.style.background='';addBtn.style.color='';addBtn.disabled=false;}
-    }
+
+  // app suggestions mode
+  if(window._suggestMode==='appsuggestions'){
+    showNextAppSuggestion();
     return;
   }
-  currentSugIdx=(currentSugIdx+1)%pool.length;showSug(pool[currentSugIdx]);
+
+  // normal mode — cycle through pool
+  const pool=getPool();
+  if(!pool.length){
+    // pool exhausted — transition to app suggestions
+    window._suggestMode='appsuggestions';
+    _appSugQueue=getFilteredAppSuggestions();
+    showNextAppSuggestion();
+    return;
+  }
+  currentSugIdx=(currentSugIdx+1)%pool.length;
+  showSug(pool[currentSugIdx]);
 }
 window.nextSug=nextSug;
 
@@ -1855,7 +2020,18 @@ async function doIt(){
 }
 window.doIt=doIt;
 
-function energyPick(el,e){document.querySelectorAll('.energy-opt').forEach(x=>x.classList.remove('on'));el.classList.add('on');currentEnergy=e;nextSug();}
+function energyPick(el,e){
+  document.querySelectorAll('.energy-opt').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');currentEnergy=e;
+  window._suggestMode='normal';window._pendingSuggestedIdea=null;skipCount=0;
+  _appSugQueue=[];
+  const card=$('sug-card');const empty=$('sug-empty');
+  if(card)card.style.display='block';if(empty)empty.style.display='none';
+  const pool=getPool();
+  if(!pool.length||!hasStrictMatch()){showEnergyEmpty();return;}
+  currentSugIdx=Math.floor(Math.random()*pool.length);
+  showSug(pool[currentSugIdx]);
+}
 window.energyPick=energyPick;
 function filterPill(el,f){document.querySelectorAll('.filter-row .pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');currentFilter=f;renderIdeas();}
 window.filterPill=filterPill;
