@@ -540,6 +540,19 @@
       <button class="sa sa-p" onclick="doIt()">let's do it ✓</button>
     </div>
   </div>
+  <!-- empty state card -->
+  <div id="sug-empty" style="display:none;margin:14px 20px;">
+    <div style="background:var(--bg2);border-radius:18px;padding:28px 20px;border:1.5px dashed var(--gray2);text-align:center;">
+      <div style="font-size:44px;margin-bottom:14px;" id="sug-empty-icon">😴</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);font-family:Georgia,serif;font-style:italic;margin-bottom:8px;line-height:1.3;" id="sug-empty-title">no ideas yet.</div>
+      <div style="font-size:13px;color:var(--gray);line-height:1.65;margin-bottom:20px;" id="sug-empty-body">want some suggestions?</div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="declineEmptySuggestions()" style="flex:1;padding:12px;border-radius:12px;border:0.5px solid var(--gray2);background:transparent;font-size:13px;color:var(--gray);cursor:pointer;font-family:inherit;">not now</button>
+        <button onclick="acceptEmptySuggestions()" style="flex:1;padding:12px;border-radius:12px;background:var(--coral);border:none;font-size:14px;color:#fff;font-weight:600;cursor:pointer;font-family:inherit;">yes, show me ✨</button>
+      </div>
+    </div>
+  </div>
+
   <div id="skip-q" style="display:none;">
     <div class="skip-q">
       <div class="skip-q-label">what's the holdup?</div>
@@ -1820,6 +1833,7 @@ function acceptEmptySuggestions(){
   const card=$('sug-card');const empty=$('sug-empty');
   if(card)card.style.display='block';
   if(empty)empty.style.display='none';
+  _appSugQueue=getFilteredAppSuggestions();
   showNextAppSuggestion();
 }
 window.acceptEmptySuggestions=acceptEmptySuggestions;
@@ -1974,21 +1988,27 @@ function showGroupSug(idea){
 
 function goSuggestGroup(){
   const g=groups.find(x=>x.id===currentGroupId);
-  if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}
   isGroupSuggest=true;
   window._suggestMode='group';
   window._pendingSuggestedIdea=null;
   skipCount=0;_appSugQueue=[];
   const card=$('sug-card');const empty=$('sug-empty');
   if(card)card.style.display='block';if(empty)empty.style.display='none';
+
+  // no ideas at all in group
+  if(!g||!g.ideas?.length){
+    showGroupEmptyState('no ideas yet.', 'this group has no ideas. want some suggestions to get started?');
+    goTo('s-suggest');return;
+  }
+
   const pool=getGroupPool(g.ideas||[]);
   if(!pool.length){
-    $('sug-eye').textContent='no match';
-    $('sug-title').textContent='nothing matches those filters.';
-    $('sug-meta').textContent='try adjusting your energy or budget on the suggestion screen.';
-    $('skip-q').style.display='none';
-    window._pendingSuggestedIdea=null;
-    const addBtn=$('sug-add-btn');if(addBtn)addBtn.style.display='none';
+    // ideas exist but none match filters
+    const energyLabel=currentEnergy==='low'?'low energy':currentEnergy==='medium'?'medium energy':'high energy';
+    showGroupEmptyState(
+      `no ${energyLabel} group ideas.`,
+      `the group has no ${energyLabel} ideas. want some suggestions to add?`
+    );
     goTo('s-suggest');return;
   }
   showGroupSug(pool[Math.floor(Math.random()*pool.length)]);
@@ -1996,14 +2016,29 @@ function goSuggestGroup(){
 }
 window.goSuggestGroup=goSuggestGroup;
 
+function showGroupEmptyState(title, body){
+  const card=$('sug-card');const empty=$('sug-empty');
+  if(card)card.style.display='none';
+  if(empty)empty.style.display='block';
+  const icon=$('sug-empty-icon');
+  const titleEl=$('sug-empty-title');
+  const bodyEl=$('sug-empty-body');
+  const energyIcon=currentEnergy==='low'?'😴':currentEnergy==='medium'?'😊':'⚡';
+  if(icon)icon.textContent=energyIcon;
+  if(titleEl)titleEl.textContent=title;
+  if(bodyEl)bodyEl.textContent=body;
+  // override accept to show group-relevant suggestions
+  window._groupEmptyAccept=true;
+}
+
 function nextSug(){
   if(isGroupSuggest){
-    const g=groups.find(x=>x.id===currentGroupId);if(!g||!g.ideas?.length)return;
+    if(window._suggestMode==='appsuggestions'){showNextAppSuggestion();return;}
+    const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
     const pool=getGroupPool(g.ideas||[]);
     if(!pool.length){
-      $('sug-eye').textContent='no match';
-      $('sug-title').textContent='nothing matches those filters.';
-      $('sug-meta').textContent='try adjusting your energy or budget.';
+      const energyLabel=currentEnergy==='low'?'low energy':currentEnergy==='medium'?'medium energy':'high energy';
+      showGroupEmptyState(`no more ${energyLabel} group ideas.`,'want some suggestions to add to the group list?');
       return;
     }
     showGroupSug(pool[Math.floor(Math.random()*pool.length)]);
