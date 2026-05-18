@@ -1567,6 +1567,14 @@ function budgetPick(el,b){
   _appSugQueue=[];
   const card=$('sug-card');const empty=$('sug-empty');
   if(card)card.style.display='block';if(empty)empty.style.display='none';
+  if(isGroupSuggest){
+    const g=groups.find(x=>x.id===currentGroupId);
+    if(!g)return;
+    const pool=getGroupPool(g.ideas||[]);
+    if(!pool.length){$('sug-eye').textContent='no match';$('sug-title').textContent='nothing matches those filters.';$('sug-meta').textContent='try a different budget.';return;}
+    showGroupSug(pool[Math.floor(Math.random()*pool.length)]);
+    return;
+  }
   const pool=getPool();
   if(!pool.length||!hasStrictMatch()){showEnergyEmpty();return;}
   currentSugIdx=Math.floor(Math.random()*pool.length);
@@ -1948,6 +1956,11 @@ function goSuggestGroup(){
   const g=groups.find(x=>x.id===currentGroupId);
   if(!g||!g.ideas?.length){alert('add some ideas to the group list first!');return;}
   isGroupSuggest=true;
+  window._suggestMode='group';
+  window._pendingSuggestedIdea=null;
+  skipCount=0;_appSugQueue=[];
+  const card=$('sug-card');const empty=$('sug-empty');
+  if(card)card.style.display='block';if(empty)empty.style.display='none';
   const pool=getGroupPool(g.ideas||[]);
   if(!pool.length){
     $('sug-eye').textContent='no match';
@@ -2027,6 +2040,14 @@ function energyPick(el,e){
   _appSugQueue=[];
   const card=$('sug-card');const empty=$('sug-empty');
   if(card)card.style.display='block';if(empty)empty.style.display='none';
+  if(isGroupSuggest){
+    const g=groups.find(x=>x.id===currentGroupId);
+    if(!g)return;
+    const pool=getGroupPool(g.ideas||[]);
+    if(!pool.length){$('sug-eye').textContent='no match';$('sug-title').textContent='nothing matches those filters.';$('sug-meta').textContent='try a different energy level.';return;}
+    showGroupSug(pool[Math.floor(Math.random()*pool.length)]);
+    return;
+  }
   const pool=getPool();
   if(!pool.length||!hasStrictMatch()){showEnergyEmpty();return;}
   currentSugIdx=Math.floor(Math.random()*pool.length);
