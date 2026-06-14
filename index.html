@@ -1800,14 +1800,10 @@ let swRegistration=null;
 const VAPID_KEY='BJo8PwteZprZKt4uCO9b4WlCICrZUibYxfOfvxBfntzdJaLz2X4t7EYunPrQUWf-F_BlqSMK6gf8VLLf7sB8QYc';
 
 async function registerSW(){
-  if(!('serviceWorker' in navigator)){if(window.debugLog)debugLog('serviceWorker not supported');return;}
+  if(!('serviceWorker' in navigator))return;
   try{
     swRegistration=await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    if(window.debugLog)debugLog('SW registered: '+swRegistration.scope);
-  }catch(e){
-    if(window.debugLog)debugLog('SW registration FAILED: '+e.message);
-    console.error('sw registration failed',e);
-  }
+  }catch(e){console.error('sw registration failed',e);}
 }
 
 function notifPermission(){
@@ -1816,99 +1812,41 @@ function notifPermission(){
 }
 
 async function requestNotifPermission(){
-  debugLog('requestNotifPermission called');
-  debugLog('Notification supported: '+('Notification' in window));
-  debugLog('messaging exists: '+!!messaging);
-  if(!('Notification' in window)||!messaging){debugLog('ABORT: missing Notification API or messaging');return false;}
+  if(!('Notification' in window)||!messaging)return false;
   try{
     const perm=await Notification.requestPermission();
-    debugLog('permission result: '+perm);
     if(perm==='granted'){
       await registerFcmToken();
     }
     return perm==='granted';
-  }catch(e){debugLog('ERROR: '+e.message);console.error('permission error',e);return false;}
+  }catch(e){console.error('permission error',e);return false;}
 }
 window.requestNotifPermission=requestNotifPermission;
 
 // Get FCM token and save it to the user's Firestore doc
-function debugLog(msg){
-  let d=document.getElementById('wn-debug');
-  if(!d){
-    d=document.createElement('div');
-    d.id='wn-debug';
-    d.style.cssText='position:fixed;bottom:90px;left:10px;right:10px;background:#000;color:#0f0;font-size:10px;font-family:monospace;padding:10px;border-radius:8px;z-index:99999;max-height:200px;overflow-y:auto;white-space:pre-wrap;opacity:0.95;';
-    document.body.appendChild(d);
-  }
-  const line=document.createElement('div');
-  line.textContent=new Date().toLocaleTimeString()+' — '+msg;
-  d.appendChild(line);
-  d.scrollTop=d.scrollHeight;
-}
-window.debugLog=debugLog;
-
-function urlBase64ToUint8Array(base64String){
-  const padding='='.repeat((4-base64String.length%4)%4);
-  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
-  const rawData=atob(base64);
-  const outputArray=new Uint8Array(rawData.length);
-  for(let i=0;i<rawData.length;++i){outputArray[i]=rawData.charCodeAt(i);}
-  return outputArray;
-}
-
 async function registerFcmToken(){
-  debugLog('registerFcmToken called');
-  debugLog('messaging exists: '+!!messaging);
-  if(!messaging){debugLog('ABORT: missing messaging');return;}
+  if(!messaging)return;
   // ensure SW is registered AND active before requesting token
   if(!swRegistration){
-    debugLog('SW not ready, registering now...');
     await registerSW();
   }
-  debugLog('waiting for SW to be ready/active...');
   try{
     const readyReg=await navigator.serviceWorker.ready;
     swRegistration=readyReg;
-    debugLog('SW ready, active state: '+(readyReg.active?readyReg.active.state:'none'));
-  }catch(e){debugLog('SW ready error: '+e.message);}
-
-  // TEST: try native PushManager.subscribe directly with converted key
-  try{
-    debugLog('VAPID_KEY length: '+VAPID_KEY.length+' value: '+VAPID_KEY);
-    debugLog('testing native PushManager.subscribe...');
-    const applicationServerKey=urlBase64ToUint8Array(VAPID_KEY);
-    debugLog('converted key length: '+applicationServerKey.length+' (should be 65)');
-    const existingSub=await swRegistration.pushManager.getSubscription();
-    if(existingSub){debugLog('unsubscribing existing subscription...');await existingSub.unsubscribe();}
-    const sub=await swRegistration.pushManager.subscribe({
-      userVisibleOnly:true,
-      applicationServerKey:applicationServerKey
-    });
-    debugLog('native subscribe SUCCESS! endpoint: '+sub.endpoint.slice(0,50)+'...');
-  }catch(e){
-    debugLog('native subscribe FAILED: '+e.message);
-  }
+  }catch(e){console.error('SW ready error',e);}
 
   try{
-    debugLog('calling getToken...');
     const token=await getToken(messaging,{
       vapidKey:VAPID_KEY
     });
-    debugLog('token received: '+(token?token.slice(0,20)+'...':'NULL/EMPTY'));
     if(token&&currentUser){
-      debugLog('saving token to firestore for uid: '+currentUser.uid.slice(0,8));
       await updateDoc(doc(db,'users',currentUser.uid),{
         fcmTokens:arrayUnion(token)
-      }).catch(async(e)=>{
-        debugLog('updateDoc failed, trying setDoc: '+e.message);
+      }).catch(async()=>{
         await setDoc(doc(db,'users',currentUser.uid),{fcmTokens:[token]},{merge:true});
       });
-      debugLog('token saved successfully!');
-    } else {
-      debugLog('NOT SAVED — token:'+(!!token)+' currentUser:'+(!!currentUser));
     }
   }catch(e){
-    debugLog('ERROR: '+e.message);
     console.error('fcm token error',e);
   }
 }
