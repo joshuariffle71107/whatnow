@@ -1847,6 +1847,15 @@ function debugLog(msg){
 }
 window.debugLog=debugLog;
 
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=atob(base64);
+  const outputArray=new Uint8Array(rawData.length);
+  for(let i=0;i<rawData.length;++i){outputArray[i]=rawData.charCodeAt(i);}
+  return outputArray;
+}
+
 async function registerFcmToken(){
   debugLog('registerFcmToken called');
   debugLog('messaging exists: '+!!messaging);
@@ -1862,6 +1871,23 @@ async function registerFcmToken(){
     swRegistration=readyReg;
     debugLog('SW ready, active state: '+(readyReg.active?readyReg.active.state:'none'));
   }catch(e){debugLog('SW ready error: '+e.message);}
+
+  // TEST: try native PushManager.subscribe directly with converted key
+  try{
+    debugLog('testing native PushManager.subscribe...');
+    const applicationServerKey=urlBase64ToUint8Array(VAPID_KEY);
+    debugLog('converted key length: '+applicationServerKey.length+' (should be 65)');
+    const existingSub=await swRegistration.pushManager.getSubscription();
+    if(existingSub){debugLog('unsubscribing existing subscription...');await existingSub.unsubscribe();}
+    const sub=await swRegistration.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:applicationServerKey
+    });
+    debugLog('native subscribe SUCCESS! endpoint: '+sub.endpoint.slice(0,50)+'...');
+  }catch(e){
+    debugLog('native subscribe FAILED: '+e.message);
+  }
+
   try{
     debugLog('calling getToken...');
     const token=await getToken(messaging,{
