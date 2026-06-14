@@ -1797,13 +1797,17 @@ let swRegistration=null;
 
 // IMPORTANT: replace this with your VAPID key from Firebase Console
 // Project Settings → Cloud Messaging → Web Push certificates
-const VAPID_KEY='BJo8PwteZprZKt4uCO9b4WlCICrZUibYxfOfvxBfntzdJaLz2X4t7EYunPrQUWf-F_BlqSMK6gf8VLLf7sB8QYc';
+const VAPID_KEY='REPLACE_WITH_YOUR_VAPID_KEY';
 
 async function registerSW(){
-  if(!('serviceWorker' in navigator))return;
+  if(!('serviceWorker' in navigator)){if(window.debugLog)debugLog('serviceWorker not supported');return;}
   try{
     swRegistration=await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-  }catch(e){console.error('sw registration failed',e);}
+    if(window.debugLog)debugLog('SW registered: '+swRegistration.scope);
+  }catch(e){
+    if(window.debugLog)debugLog('SW registration FAILED: '+e.message);
+    console.error('sw registration failed',e);
+  }
 }
 
 function notifPermission(){
@@ -1812,34 +1816,65 @@ function notifPermission(){
 }
 
 async function requestNotifPermission(){
-  if(!('Notification' in window)||!messaging)return false;
+  debugLog('requestNotifPermission called');
+  debugLog('Notification supported: '+('Notification' in window));
+  debugLog('messaging exists: '+!!messaging);
+  if(!('Notification' in window)||!messaging){debugLog('ABORT: missing Notification API or messaging');return false;}
   try{
     const perm=await Notification.requestPermission();
+    debugLog('permission result: '+perm);
     if(perm==='granted'){
       await registerFcmToken();
     }
     return perm==='granted';
-  }catch(e){console.error('permission error',e);return false;}
+  }catch(e){debugLog('ERROR: '+e.message);console.error('permission error',e);return false;}
 }
 window.requestNotifPermission=requestNotifPermission;
 
 // Get FCM token and save it to the user's Firestore doc
+function debugLog(msg){
+  let d=document.getElementById('wn-debug');
+  if(!d){
+    d=document.createElement('div');
+    d.id='wn-debug';
+    d.style.cssText='position:fixed;bottom:90px;left:10px;right:10px;background:#000;color:#0f0;font-size:10px;font-family:monospace;padding:10px;border-radius:8px;z-index:99999;max-height:200px;overflow-y:auto;white-space:pre-wrap;opacity:0.95;';
+    document.body.appendChild(d);
+  }
+  const line=document.createElement('div');
+  line.textContent=new Date().toLocaleTimeString()+' — '+msg;
+  d.appendChild(line);
+  d.scrollTop=d.scrollHeight;
+}
+window.debugLog=debugLog;
+
 async function registerFcmToken(){
-  if(!messaging||!swRegistration)return;
+  debugLog('registerFcmToken called');
+  debugLog('messaging exists: '+!!messaging);
+  debugLog('swRegistration exists: '+!!swRegistration);
+  if(!messaging||!swRegistration){debugLog('ABORT: missing messaging or swRegistration');return;}
   try{
+    debugLog('calling getToken...');
     const token=await getToken(messaging,{
       vapidKey:VAPID_KEY,
       serviceWorkerRegistration:swRegistration
     });
+    debugLog('token received: '+(token?token.slice(0,20)+'...':'NULL/EMPTY'));
     if(token&&currentUser){
+      debugLog('saving token to firestore for uid: '+currentUser.uid.slice(0,8));
       await updateDoc(doc(db,'users',currentUser.uid),{
         fcmTokens:arrayUnion(token)
-      }).catch(async()=>{
-        // doc might not have the field yet
+      }).catch(async(e)=>{
+        debugLog('updateDoc failed, trying setDoc: '+e.message);
         await setDoc(doc(db,'users',currentUser.uid),{fcmTokens:[token]},{merge:true});
       });
+      debugLog('token saved successfully!');
+    } else {
+      debugLog('NOT SAVED — token:'+(!!token)+' currentUser:'+(!!currentUser));
     }
-  }catch(e){console.error('fcm token error',e);}
+  }catch(e){
+    debugLog('ERROR: '+e.message);
+    console.error('fcm token error',e);
+  }
 }
 
 // Save nudge frequency to Firestore too (so Cloud Functions can read it)
