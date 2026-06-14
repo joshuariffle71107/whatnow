@@ -1850,8 +1850,13 @@ window.debugLog=debugLog;
 async function registerFcmToken(){
   debugLog('registerFcmToken called');
   debugLog('messaging exists: '+!!messaging);
+  if(!messaging){debugLog('ABORT: missing messaging');return;}
+  // ensure SW is registered before requesting token
+  if(!swRegistration){
+    debugLog('SW not ready, registering now...');
+    await registerSW();
+  }
   debugLog('swRegistration exists: '+!!swRegistration);
-  if(!messaging||!swRegistration){debugLog('ABORT: missing messaging or swRegistration');return;}
   try{
     debugLog('calling getToken...');
     const token=await getToken(messaging,{
