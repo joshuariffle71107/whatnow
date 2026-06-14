@@ -1855,8 +1855,7 @@ async function registerFcmToken(){
   try{
     debugLog('calling getToken...');
     const token=await getToken(messaging,{
-      vapidKey:VAPID_KEY,
-      serviceWorkerRegistration:swRegistration
+      vapidKey:VAPID_KEY
     });
     debugLog('token received: '+(token?token.slice(0,20)+'...':'NULL/EMPTY'));
     if(token&&currentUser){
