@@ -445,6 +445,19 @@
     <div class="topbar-right" id="home-handle"></div>
   </div>
   <div id="nudge-wrap"></div>
+<div id="notif-prompt" style="display:none;margin:0 20px 14px;background:var(--card);border-radius:14px;padding:14px 16px;border:0.5px solid var(--gray3);">
+  <div style="display:flex;align-items:flex-start;gap:10px;">
+    <div style="font-size:22px;">🔔</div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">turn on notifications?</div>
+      <div style="font-size:12px;color:var(--gray);line-height:1.5;margin-bottom:10px;">get reminders for ideas and the occasional nudge to do something.</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="dismissNotifPrompt()" style="flex:1;padding:8px;border-radius:9px;border:0.5px solid var(--gray2);background:transparent;font-size:12px;color:var(--gray);cursor:pointer;font-family:inherit;">not now</button>
+        <button onclick="enableNotifFromPrompt()" style="flex:1;padding:8px;border-radius:9px;background:var(--coral);border:none;font-size:12px;color:#fff;font-weight:600;cursor:pointer;font-family:inherit;">turn on</button>
+      </div>
+    </div>
+  </div>
+</div>
   <div class="btn-section">
     <div class="btn-shadow"></div>
     <button class="the-btn" id="theBtn"
@@ -849,9 +862,13 @@
       <span style="font-size:14px;color:var(--text);">nudge frequency</span>
       <div style="display:flex;align-items:center;gap:6px;"><span id="nudge-freq-val" style="font-size:13px;color:var(--gray);">sometimes</span><span style="color:var(--gray);">›</span></div>
     </button>
-    <button onclick="openEditField('defaultenergy')" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:none;background:transparent;cursor:pointer;font-family:inherit;text-align:left;">
+    <button onclick="openEditField('defaultenergy')" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:none;border-bottom:0.5px solid var(--gray3);background:transparent;cursor:pointer;font-family:inherit;text-align:left;">
       <span style="font-size:14px;color:var(--text);">default energy</span>
       <div style="display:flex;align-items:center;gap:6px;"><span id="default-energy-val" style="font-size:13px;color:var(--gray);">medium</span><span style="color:var(--gray);">›</span></div>
+    </button>
+    <button onclick="toggleNotifFromProfile()" style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:none;background:transparent;cursor:pointer;font-family:inherit;text-align:left;">
+      <span style="font-size:14px;color:var(--text);">notifications</span>
+      <div style="display:flex;align-items:center;gap:6px;"><span id="notif-status-val" style="font-size:13px;color:var(--gray);">off</span><span style="color:var(--gray);">›</span></div>
     </button>
   </div>
 
@@ -1073,12 +1090,22 @@ window.onerror=function(msg,src,line,col,err){
 onAuthStateChanged(auth,async user=>{
   // remove the blank holding screen
   const loading=$('s-loading');if(loading)loading.remove();
-  if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');}}
+  if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');
+    registerSW();
+    setTimeout(()=>{checkDueReminders();checkDailyNudge();},1000);
+    maybeShowNotifPrompt();
+  }}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
 });
 
 function setupListeners(){
   loadUserPrefs();
+  // re-check reminders when app regains focus
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'){
+      checkDueReminders();
+    }
+  });
   const de=localStorage.getItem('wn-default-energy');if(de)currentEnergy=de;
   if(unsubIdeas)unsubIdeas();if(unsubSomedays)unsubSomedays();if(unsubGroups)unsubGroups();
   const uid=currentUser.uid;
@@ -1129,7 +1156,10 @@ async function finishOnboard(){
   selected.forEach(el=>{const text=el.querySelector('.onboard-opt-text').textContent;selectedTexts.push(text);const tag=tagMap[text]||'solo';batch.push(addDoc(collection(db,'ideas'),{userId:currentUser.uid,text,tag,dateAdded:serverTimestamp(),skipCount:0,isDone:false,isSomeday:false,recurring:true,reminder:null,repeat:'none',location:'',expires:null,isPrivate:false}));});
   const prefs=getOnboardPreferences(selectedTexts);
   await Promise.all(batch);await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true,prefs});
-  setupListeners();$('main-nav').style.display='flex';goTo('s-home');showWalkthrough();
+  setupListeners();$('main-nav').style.display='flex';goTo('s-home');
+  registerSW();
+  setTimeout(()=>{checkDueReminders();checkDailyNudge();},1000);
+  maybeShowNotifPrompt();
 }
 window.finishOnboard=finishOnboard;
 
@@ -1197,6 +1227,7 @@ function makeSwipeRow(idea){
 }
 
 function renderIdeas(){
+  maybeShowNotifPrompt();
   const el=$('idea-list');if(!el)return;
   let active=ideas.filter(i=>currentFilter==='anything'||i.tag===currentFilter);
   if(searchQuery)active=active.filter(i=>i.text.toLowerCase().includes(searchQuery));
@@ -1323,6 +1354,7 @@ function renderGroupDetail(gid){
 // ── PROFILE & SETTINGS ────────────────────────────────────────────────────
 async function renderProfile(){
   if(!currentUser)return;
+  updateNotifStatusVal();
   $('profile-avatar').textContent=currentUsername?currentUsername.slice(0,2).toUpperCase():'?';
   $('profile-username-display').textContent=`@${currentUsername}`;
   $('profile-email-display').textContent=currentUser.email;
@@ -1347,6 +1379,29 @@ async function renderProfile(){
     const favEl=$('stat-fav');if(favEl)favEl.textContent=topTag?topTag[0]:'—';
   }catch(e){console.error('stats error',e);}
 }
+
+
+function updateNotifStatusVal(){
+  const el=$('notif-status-val');if(!el)return;
+  const perm=notifPermission();
+  if(perm==='granted')el.textContent='on';
+  else if(perm==='denied')el.textContent='blocked';
+  else el.textContent='off';
+}
+
+async function toggleNotifFromProfile(){
+  const perm=notifPermission();
+  if(perm==='granted'){
+    alert('to turn off notifications, go to your phone settings → notifications → what now? and disable them there.');
+  } else if(perm==='denied'){
+    alert('notifications are blocked. to enable them, go to your phone settings → notifications → what now? and allow them there.');
+  } else {
+    const granted=await requestNotifPermission();
+    updateNotifStatusVal();
+    if(granted)localStorage.setItem('wn-notif-dismissed','true');
+  }
+}
+window.toggleNotifFromProfile=toggleNotifFromProfile;
 
 function shareApp(){
   const url=window.location.origin;
@@ -1737,6 +1792,114 @@ async function quickAdd(btn,text,tag,energy,budget){
   },300);
 }
 window.quickAdd=quickAdd;
+
+
+// ── NOTIFICATIONS ────────────────────────────────────────────────────────
+let swRegistration=null;
+
+async function registerSW(){
+  if(!('serviceWorker' in navigator))return;
+  try{
+    swRegistration=await navigator.serviceWorker.register('/sw.js');
+  }catch(e){console.error('sw registration failed',e);}
+}
+
+function notifPermission(){
+  if(!('Notification' in window))return 'unsupported';
+  return Notification.permission; // 'granted','denied','default'
+}
+
+async function requestNotifPermission(){
+  if(!('Notification' in window))return false;
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm==='granted'){
+      localStorage.setItem('wn-notif-enabled','true');
+      checkDueReminders();
+    }
+    return perm==='granted';
+  }catch(e){return false;}
+}
+window.requestNotifPermission=requestNotifPermission;
+
+function showLocalNotification(title,body,tag){
+  if(notifPermission()!=='granted')return;
+  if(swRegistration&&swRegistration.active){
+    swRegistration.active.postMessage({
+      type:'SHOW_NOTIFICATION',
+      payload:{title,body,tag,icon:'icon.png'}
+    });
+  }else if('Notification' in window){
+    new Notification(title,{body,tag,icon:'icon.png'});
+  }
+}
+
+// Check for ideas with reminders that are due
+async function checkDueReminders(){
+  if(notifPermission()!=='granted')return;
+  if(!ideas||!ideas.length)return;
+  const now=new Date();
+  const seenKey='wn-seen-reminders';
+  let seen=[];
+  try{seen=JSON.parse(localStorage.getItem(seenKey)||'[]');}catch(e){}
+
+  ideas.forEach(idea=>{
+    if(!idea.reminder||idea.isDone)return;
+    const reminderTime=new Date(idea.reminder);
+    if(isNaN(reminderTime.getTime()))return;
+    const reminderKey=idea.id+'_'+idea.reminder;
+    // due if reminder time has passed (within last 24h to avoid spamming old ones)
+    const diff=now-reminderTime;
+    if(diff>=0&&diff<24*60*60*1000&&!seen.includes(reminderKey)){
+      showLocalNotification('what now?',`reminder: ${idea.text}`,'reminder-'+idea.id);
+      seen.push(reminderKey);
+    }
+  });
+
+  // keep seen list trimmed
+  if(seen.length>100)seen=seen.slice(-50);
+  localStorage.setItem(seenKey,JSON.stringify(seen));
+}
+
+// Daily nudge check — if it's been 24+ hours since last open
+function checkDailyNudge(){
+  if(notifPermission()!=='granted')return;
+  const freq=localStorage.getItem('wn-nudge')||'sometimes';
+  if(freq==='never')return;
+  const lastOpen=localStorage.getItem('wn-last-open');
+  const now=Date.now();
+  if(lastOpen){
+    const hoursSince=(now-parseInt(lastOpen))/(1000*60*60);
+    if(hoursSince>=20){
+      const msg=getSmartNudge();
+      if(msg)showLocalNotification('what now?',msg,'daily-nudge');
+    }
+  }
+  localStorage.setItem('wn-last-open',now.toString());
+}
+
+
+function maybeShowNotifPrompt(){
+  if(notifPermission()!=='default')return; // already granted, denied, or unsupported
+  if(localStorage.getItem('wn-notif-dismissed')==='true')return;
+  // show after they have at least 2 ideas — means they're engaged
+  if(!ideas||ideas.length<2)return;
+  const el=$('notif-prompt');
+  if(el)el.style.display='block';
+}
+
+function dismissNotifPrompt(){
+  localStorage.setItem('wn-notif-dismissed','true');
+  const el=$('notif-prompt');if(el)el.style.display='none';
+}
+window.dismissNotifPrompt=dismissNotifPrompt;
+
+async function enableNotifFromPrompt(){
+  const granted=await requestNotifPermission();
+  const el=$('notif-prompt');if(el)el.style.display='none';
+  if(!granted)localStorage.setItem('wn-notif-dismissed','true');
+}
+window.enableNotifFromPrompt=enableNotifFromPrompt;
 
 // ── SEARCH ────────────────────────────────────────────────────────────────
 let searchQuery='';
