@@ -15,9 +15,9 @@ const messaging = firebase.messaging();
 
 // Handle background push messages
 messaging.onBackgroundMessage((payload) => {
-  const title = (payload.notification && payload.notification.title) || 'what now?';
-  const body = (payload.notification && payload.notification.body) || '';
   const data = payload.data || {};
+  const title = data.title || 'what now?';
+  const body = data.body || '';
 
   self.registration.showNotification(title, {
     body: body,
