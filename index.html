@@ -1883,6 +1883,29 @@ async function enableNotifFromPrompt(){
 }
 window.enableNotifFromPrompt=enableNotifFromPrompt;
 
+
+// Convert <input type="datetime-local"> value (e.g. "2026-06-14T02:04") to a
+// proper ISO 8601 string WITH timezone offset, so servers interpret it correctly
+// regardless of what timezone they run in.
+function reminderToISO(localDatetimeStr){
+  if(!localDatetimeStr)return null;
+  // datetime-local gives local time with no timezone — construct a Date
+  // using local components, which JS will interpret correctly relative to
+  // the browser's timezone, then convert to a full ISO string (UTC).
+  const d=new Date(localDatetimeStr);
+  if(isNaN(d.getTime()))return null;
+  return d.toISOString();
+}
+
+// Convert stored ISO (UTC) timestamp back to the format <input type="datetime-local"> expects
+function isoToLocalDatetime(isoStr){
+  if(!isoStr)return '';
+  const d=new Date(isoStr);
+  if(isNaN(d.getTime()))return '';
+  // build local YYYY-MM-DDTHH:MM string from the Date object (uses browser's local timezone)
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 // ── SEARCH ────────────────────────────────────────────────────────────────
 let searchQuery='';
 function searchIdeas(q){searchQuery=q.toLowerCase().trim();renderIdeas();}
@@ -2329,7 +2352,7 @@ function openDetail(id){
   const bpBtn=document.querySelector(`#detail-budget-pills .type-btn[onclick*="${ideaBudget}"]`);
   if(bpBtn)bpBtn.classList.add('on');
   const rec=idea.recurring!==false;const tog=$('recurring-toggle');tog.classList.toggle('on',rec);tog.querySelector('.toggle-knob').style.left=rec?'20px':'2px';$('recurring-label').textContent=rec?'stays on list after done':'removed after done';
-  $('detail-reminder').value=idea.reminder||'';$('detail-repeat').value=idea.repeat||'none';$('detail-location').value=idea.location||'';$('detail-expires').value=idea.expires||'';
+  $('detail-reminder').value=isoToLocalDatetime(idea.reminder);$('detail-repeat').value=idea.repeat||'none';$('detail-location').value=idea.location||'';$('detail-expires').value=idea.expires||'';
   const pt=$('priv-toggle');pt.classList.toggle('on',!!idea.isPrivate);pt.querySelector('.toggle-knob').style.left=idea.isPrivate?'20px':'2px';
   goTo('s-detail');
 }
@@ -2342,7 +2365,7 @@ async function saveDetail(){
   const recurring=$('recurring-toggle').classList.contains('on');
   const activeBudgetBtn=document.querySelector('#detail-budget-pills .type-btn.on');
   const newBudget=activeBudgetBtn?(['free','cheap','money'].find(b=>activeBudgetBtn.getAttribute('onclick').includes(b))||'free'):'free';
-  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,energy:newEnergy,budget:newBudget,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on'),reminderNotified:false});
+  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,energy:newEnergy,budget:newBudget,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on'),reminderNotified:false,reminder:reminderToISO($('detail-reminder').value)});
   goTo('s-home');
 }
 window.saveDetail=saveDetail;
