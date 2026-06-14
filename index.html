@@ -1874,6 +1874,7 @@ async function registerFcmToken(){
 
   // TEST: try native PushManager.subscribe directly with converted key
   try{
+    debugLog('VAPID_KEY length: '+VAPID_KEY.length+' value: '+VAPID_KEY);
     debugLog('testing native PushManager.subscribe...');
     const applicationServerKey=urlBase64ToUint8Array(VAPID_KEY);
     debugLog('converted key length: '+applicationServerKey.length+' (should be 65)');
