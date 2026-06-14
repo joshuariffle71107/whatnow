@@ -943,10 +943,12 @@
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut as fbSignOut,onAuthStateChanged,sendPasswordResetEmail,updateEmail,updatePassword}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,serverTimestamp,arrayUnion}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import{getMessaging,getToken,onMessage}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
 const app=initializeApp({apiKey:"AIzaSyCS-pacDnn-wPq1K9iG8n0z1bB93UlTjPY",authDomain:"whatnow-b6162.firebaseapp.com",projectId:"whatnow-b6162",storageBucket:"whatnow-b6162.firebasestorage.app",messagingSenderId:"880600854409",appId:"1:880600854409:web:ea91cd985007e64e363b58"});
 const auth=getAuth(app);const db=getFirestore(app);
+let messaging=null;try{messaging=getMessaging(app);}catch(e){console.log('messaging not supported',e);}
 
 const TEAL='#1D9E75',AMBER='#BA7517',CORAL='#B8432F',GRAY='#C4B5B0',GREEN='#2E7D32';
 const nudges=["it's friday... what now? 👀","you haven't done anything from your list in a while. just saying.","saturday with nothing to do? your list has thoughts.","it's the weekend. what now?","your someday list is getting dusty. maybe today's the day?","doing nothing is always an option. but you have ideas waiting."];
@@ -1092,7 +1094,7 @@ onAuthStateChanged(auth,async user=>{
   const loading=$('s-loading');if(loading)loading.remove();
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');
     registerSW();
-    setTimeout(()=>{checkDueReminders();checkDailyNudge();},1000);
+    if(notifPermission()==='granted')registerFcmToken();
     maybeShowNotifPrompt();
   }}
   else{currentUser=null;currentUsername='';goTo('s-signin');}
@@ -1100,12 +1102,7 @@ onAuthStateChanged(auth,async user=>{
 
 function setupListeners(){
   loadUserPrefs();
-  // re-check reminders when app regains focus
-  document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState==='visible'){
-      checkDueReminders();
-    }
-  });
+  syncNudgeFreqToServer(localStorage.getItem('wn-nudge')||'sometimes');
   const de=localStorage.getItem('wn-default-energy');if(de)currentEnergy=de;
   if(unsubIdeas)unsubIdeas();if(unsubSomedays)unsubSomedays();if(unsubGroups)unsubGroups();
   const uid=currentUser.uid;
@@ -1158,7 +1155,7 @@ async function finishOnboard(){
   await Promise.all(batch);await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true,prefs});
   setupListeners();$('main-nav').style.display='flex';goTo('s-home');
   registerSW();
-  setTimeout(()=>{checkDueReminders();checkDailyNudge();},1000);
+  if(notifPermission()==='granted')registerFcmToken();
   maybeShowNotifPrompt();
 }
 window.finishOnboard=finishOnboard;
@@ -1396,6 +1393,7 @@ async function toggleNotifFromProfile(){
   } else if(perm==='denied'){
     alert('notifications are blocked. to enable them, go to your phone settings → notifications → what now? and allow them there.');
   } else {
+    if(!swRegistration)await registerSW();
     const granted=await requestNotifPermission();
     updateNotifStatusVal();
     if(granted)localStorage.setItem('wn-notif-dismissed','true');
@@ -1794,13 +1792,17 @@ async function quickAdd(btn,text,tag,energy,budget){
 window.quickAdd=quickAdd;
 
 
-// ── NOTIFICATIONS ────────────────────────────────────────────────────────
+// ── NOTIFICATIONS (Firebase Cloud Messaging) ────────────────────────────
 let swRegistration=null;
+
+// IMPORTANT: replace this with your VAPID key from Firebase Console
+// Project Settings → Cloud Messaging → Web Push certificates
+const VAPID_KEY='REPLACE_WITH_YOUR_VAPID_KEY';
 
 async function registerSW(){
   if(!('serviceWorker' in navigator))return;
   try{
-    swRegistration=await navigator.serviceWorker.register('/sw.js');
+    swRegistration=await navigator.serviceWorker.register('/firebase-messaging-sw.js');
   }catch(e){console.error('sw registration failed',e);}
 }
 
@@ -1810,72 +1812,42 @@ function notifPermission(){
 }
 
 async function requestNotifPermission(){
-  if(!('Notification' in window))return false;
+  if(!('Notification' in window)||!messaging)return false;
   try{
     const perm=await Notification.requestPermission();
     if(perm==='granted'){
-      localStorage.setItem('wn-notif-enabled','true');
-      checkDueReminders();
+      await registerFcmToken();
     }
     return perm==='granted';
-  }catch(e){return false;}
+  }catch(e){console.error('permission error',e);return false;}
 }
 window.requestNotifPermission=requestNotifPermission;
 
-function showLocalNotification(title,body,tag){
-  if(notifPermission()!=='granted')return;
-  if(swRegistration&&swRegistration.active){
-    swRegistration.active.postMessage({
-      type:'SHOW_NOTIFICATION',
-      payload:{title,body,tag,icon:'icon.png'}
+// Get FCM token and save it to the user's Firestore doc
+async function registerFcmToken(){
+  if(!messaging||!swRegistration)return;
+  try{
+    const token=await getToken(messaging,{
+      vapidKey:VAPID_KEY,
+      serviceWorkerRegistration:swRegistration
     });
-  }else if('Notification' in window){
-    new Notification(title,{body,tag,icon:'icon.png'});
-  }
+    if(token&&currentUser){
+      await updateDoc(doc(db,'users',currentUser.uid),{
+        fcmTokens:arrayUnion(token)
+      }).catch(async()=>{
+        // doc might not have the field yet
+        await setDoc(doc(db,'users',currentUser.uid),{fcmTokens:[token]},{merge:true});
+      });
+    }
+  }catch(e){console.error('fcm token error',e);}
 }
 
-// Check for ideas with reminders that are due
-async function checkDueReminders(){
-  if(notifPermission()!=='granted')return;
-  if(!ideas||!ideas.length)return;
-  const now=new Date();
-  const seenKey='wn-seen-reminders';
-  let seen=[];
-  try{seen=JSON.parse(localStorage.getItem(seenKey)||'[]');}catch(e){}
-
-  ideas.forEach(idea=>{
-    if(!idea.reminder||idea.isDone)return;
-    const reminderTime=new Date(idea.reminder);
-    if(isNaN(reminderTime.getTime()))return;
-    const reminderKey=idea.id+'_'+idea.reminder;
-    // due if reminder time has passed (within last 24h to avoid spamming old ones)
-    const diff=now-reminderTime;
-    if(diff>=0&&diff<24*60*60*1000&&!seen.includes(reminderKey)){
-      showLocalNotification('what now?',`reminder: ${idea.text}`,'reminder-'+idea.id);
-      seen.push(reminderKey);
-    }
-  });
-
-  // keep seen list trimmed
-  if(seen.length>100)seen=seen.slice(-50);
-  localStorage.setItem(seenKey,JSON.stringify(seen));
-}
-
-// Daily nudge check — if it's been 24+ hours since last open
-function checkDailyNudge(){
-  if(notifPermission()!=='granted')return;
-  const freq=localStorage.getItem('wn-nudge')||'sometimes';
-  if(freq==='never')return;
-  const lastOpen=localStorage.getItem('wn-last-open');
-  const now=Date.now();
-  if(lastOpen){
-    const hoursSince=(now-parseInt(lastOpen))/(1000*60*60);
-    if(hoursSince>=20){
-      const msg=getSmartNudge();
-      if(msg)showLocalNotification('what now?',msg,'daily-nudge');
-    }
-  }
-  localStorage.setItem('wn-last-open',now.toString());
+// Save nudge frequency to Firestore too (so Cloud Functions can read it)
+async function syncNudgeFreqToServer(freq){
+  if(!currentUser)return;
+  try{
+    await setDoc(doc(db,'users',currentUser.uid),{nudgeFreq:freq},{merge:true});
+  }catch(e){console.error('nudge sync error',e);}
 }
 
 
@@ -1895,6 +1867,7 @@ function dismissNotifPrompt(){
 window.dismissNotifPrompt=dismissNotifPrompt;
 
 async function enableNotifFromPrompt(){
+  if(!swRegistration)await registerSW();
   const granted=await requestNotifPermission();
   const el=$('notif-prompt');if(el)el.style.display='none';
   if(!granted)localStorage.setItem('wn-notif-dismissed','true');
@@ -2318,7 +2291,7 @@ async function addGroupIdea(){
   const inp=$('group-new-idea');const val=inp.value.trim();if(!val)return;
   
   const g=groups.find(x=>x.id===currentGroupId);if(!g)return;
-  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,energy:selectedGroupAddEnergy_val,budget:selectedGroupAddBudget_val,addedBy:currentUsername,dateAdded:new Date().toISOString()}]});
+  await updateDoc(doc(db,'groups',currentGroupId),{ideas:[...(g.ideas||[]),{id:Date.now().toString(),text:val,tag:selectedGroupType,energy:selectedGroupAddEnergy_val,budget:selectedGroupAddBudget_val,addedBy:currentUsername,addedByUid:currentUser.uid,dateAdded:new Date().toISOString()}]});
   inp.value='';
   // reset pickers
   document.querySelectorAll('#s-groupdetail .type-btn').forEach(b=>b.classList.remove('on'));
@@ -2360,7 +2333,7 @@ async function saveDetail(){
   const recurring=$('recurring-toggle').classList.contains('on');
   const activeBudgetBtn=document.querySelector('#detail-budget-pills .type-btn.on');
   const newBudget=activeBudgetBtn?(['free','cheap','money'].find(b=>activeBudgetBtn.getAttribute('onclick').includes(b))||'free'):'free';
-  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,energy:newEnergy,budget:newBudget,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on')});
+  await updateDoc(doc(db,'ideas',currentDetailId),{tag:newTag,energy:newEnergy,budget:newBudget,recurring,reminder:$('detail-reminder').value||null,repeat:$('detail-repeat').value||'none',location:$('detail-location').value||'',expires:$('detail-expires').value||null,isPrivate:$('priv-toggle').classList.contains('on'),reminderNotified:false});
   goTo('s-home');
 }
 window.saveDetail=saveDetail;
@@ -2541,6 +2514,7 @@ async function saveEditField(){
     else if(editFieldType==='nudge'){
       const val=window._nudgePick||(localStorage.getItem('wn-nudge')||'sometimes');
       localStorage.setItem('wn-nudge',val);
+      syncNudgeFreqToServer(val);
       const el=$('nudge-freq-val');if(el)el.textContent=val;
       $('edit-ok').textContent='saved!';setTimeout(()=>closeEditField(),800);
     }
