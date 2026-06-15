@@ -1840,10 +1840,14 @@ async function registerFcmToken(){
       vapidKey:VAPID_KEY
     });
     if(token&&currentUser){
+      // save timezone offset (minutes behind UTC, e.g. Central = 300) so
+      // server-side functions can compute each user's local time
+      const tzOffset=new Date().getTimezoneOffset();
       await updateDoc(doc(db,'users',currentUser.uid),{
-        fcmTokens:arrayUnion(token)
+        fcmTokens:arrayUnion(token),
+        tzOffset:tzOffset
       }).catch(async()=>{
-        await setDoc(doc(db,'users',currentUser.uid),{fcmTokens:[token]},{merge:true});
+        await setDoc(doc(db,'users',currentUser.uid),{fcmTokens:[token],tzOffset:tzOffset},{merge:true});
       });
     }
   }catch(e){
