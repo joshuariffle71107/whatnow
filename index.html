@@ -1093,7 +1093,7 @@ onAuthStateChanged(auth,async user=>{
   // remove the blank holding screen
   const loading=$('s-loading');if(loading)loading.remove();
   if(user){currentUser=user;const profile=await getDoc(doc(db,'users',user.uid));if(!profile.exists()||!profile.data().onboarded){goTo('s-onboard');}else{currentUsername=profile.data().username||'';setupListeners();$('main-nav').style.display='flex';goTo('s-home');
-    registerSW();
+    registerSW().then(()=>setupForegroundMessages());
     if(notifPermission()==='granted')registerFcmToken();
     maybeShowNotifPrompt();
   }}
@@ -1154,7 +1154,7 @@ async function finishOnboard(){
   const prefs=getOnboardPreferences(selectedTexts);
   await Promise.all(batch);await updateDoc(doc(db,'users',currentUser.uid),{onboarded:true,prefs});
   setupListeners();$('main-nav').style.display='flex';goTo('s-home');
-  registerSW();
+  registerSW().then(()=>setupForegroundMessages());
   if(notifPermission()==='granted')registerFcmToken();
   maybeShowNotifPrompt();
 }
@@ -1804,6 +1804,29 @@ async function registerSW(){
   try{
     swRegistration=await navigator.serviceWorker.register('/firebase-messaging-sw.js');
   }catch(e){console.error('sw registration failed',e);}
+}
+
+// Handle messages that arrive while the app is OPEN (foreground).
+// Without this, onBackgroundMessage in the service worker won't fire
+// and the notification would silently disappear.
+function setupForegroundMessages(){
+  if(!messaging)return;
+  onMessage(messaging,(payload)=>{
+    const data=payload.data||{};
+    const title=data.title||'what now?';
+    const body=data.body||'';
+    // show a native notification even though the app is open
+    if(notifPermission()==='granted'&&swRegistration){
+      swRegistration.showNotification(title,{
+        body:body,
+        icon:'icon.png',
+        badge:'icon.png',
+        tag:data.type||'whatnow-push',
+        renotify:true,
+        data:data
+      });
+    }
+  });
 }
 
 function notifPermission(){
